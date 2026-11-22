@@ -1,0 +1,191 @@
+[
+  {
+    "id": "style-minimal",
+    "sourcePage": "https://www.pexels.com/photo/3927390/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-minimal.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "870301a53540b59e31b038c59c8d43f8a12719bbc1420b55b280a4e2e552e159"
+  },
+  {
+    "id": "style-soft",
+    "sourcePage": "https://www.pexels.com/photo/14935628/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-soft.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "3d3a103e3721cbb23c4fb32cf4d681cfe82b788a0ed18ace0bc25391f9762c2a"
+  },
+  {
+    "id": "style-denim",
+    "sourcePage": "https://www.pexels.com/photo/19836626/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-denim.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "1fe113715cc66fcc75393b080b53e315927328fefe767e4750873839432cd94e"
+  },
+  {
+    "id": "style-film",
+    "sourcePage": "https://www.pexels.com/photo/26851192/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-film.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "2c20a97394f19eb6085381177dec805267112499b577cf54ac6a1885a1840815"
+  },
+  {
+    "id": "style-romantic",
+    "sourcePage": "https://www.pexels.com/photo/5802645/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-romantic.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "b68020a56afe73b35fffdefd0ba0237c4bd757309fb6000be2f63c238404acd8"
+  },
+  {
+    "id": "style-night",
+    "sourcePage": "https://www.pexels.com/photo/4863008/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-night.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "f2218f5590710f329ccd1d8257e2cd6636d7e0f2d66872fc0ad2b8fa1f825ecc"
+  },
+  {
+    "id": "style-outdoor",
+    "sourcePage": "https://www.pexels.com/photo/15064135/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-outdoor.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "a877ebdd9af226265b7dff4a735b0abe5038b81ab4b4c22767407c3916a6a666"
+  },
+  {
+    "id": "style-sport",
+    "sourcePage": "https://www.pexels.com/photo/36856685/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-sport.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "d74d5a19ac3b7a354b61554382546da32e3d0a6c3ab1e974decb746ab5678429"
+  },
+  {
+    "id": "style-linen",
+    "sourcePage": "https://www.pexels.com/photo/8774406/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-linen.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "1607fbdb654e8ff36fd4bd740f83bd987712347a15096a49d226f661d6343658"
+  },
+  {
+    "id": "style-navy",
+    "sourcePage": "https://www.pexels.com/photo/30326177/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-navy.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "ec9ce3884bde13669bfe5ab3a26b2afc505f9301eaf2171769a294b424fabd3e"
+  },
+  {
+    "id": "style-suit",
+    "sourcePage": "https://www.pexels.com/photo/14577586/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-suit.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "6b54610de45c2b5c9f8ed57217b851f1e13f77158904b2f4a6f86a386be10890"
+  },
+  {
+    "id": "style-college",
+    "sourcePage": "https://www.pexels.com/photo/33516576/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-college.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "88fa8121ef4f39973c9c67deafc20d0a3f3801d66aae61df6dc594a1bd1493e2"
+  },
+  {
+    "id": "style-workwear",
+    "sourcePage": "https://www.pexels.com/photo/2814833/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-workwear.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "680640f4204ba2e24d964c541d44611dd4d53a28d5eb4fffaf9e287b6f3b87f4"
+  },
+  {
+    "id": "style-stripes",
+    "sourcePage": "https://www.pexels.com/photo/11294742/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-stripes.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "2e8433f8dcc30faf265a8e3bcdebecbe7268dca352066634c4deb2340856115c"
+  },
+  {
+    "id": "style-floral",
+    "sourcePage": "https://www.pexels.com/photo/8616874/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-floral.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "e29f22df68d13b3974a85aad6cd5aad9de87266493ffece4dfdfbdfa29efef9a"
+  },
+  {
+    "id": "style-satin",
+    "sourcePage": "https://www.pexels.com/photo/19856118/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-satin.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "efdddb2db8892bbeb74d882b213064f701bc13d9da44cf878c06a434291faed7"
+  },
+  {
+    "id": "style-date",
+    "sourcePage": "https://www.pexels.com/photo/35585255/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-date.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "8720416a101405ffc0da3689d9b8ddd9f1f532f7eeaacde7ff1aa530a4c16d33"
+  },
+  {
+    "id": "style-monochrome",
+    "sourcePage": "https://www.pexels.com/photo/7794365/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-monochrome.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "315c0e4cf82b45cc9e20a7ad3018bd775b57e0537a3db2175d6322fa166ff582"
+  },
+  {
+    "id": "style-rain",
+    "sourcePage": "https://www.pexels.com/photo/6571743/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-rain.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "d84031ce845f415edf67eb90d50bc4d9c5ff6237ad91e9cdddb63d461e445a6d"
+  },
+  {
+    "id": "style-color",
+    "sourcePage": "https://www.pexels.com/photo/4863066/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-color.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "18fec7b016c993ec3a77658d7141379ceb16a2802418edb4e57e9a5b2e6919c1"
+  },
+  {
+    "id": "style-backdrop",
+    "sourcePage": "https://www.pexels.com/photo/7232396/",
+    "image": "/entangled-shelter-pages/entangled/style-objects/style-backdrop.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop.",
+    "sha256": "239137d3863ecfaa9b310fe0037a34a614f05b3a2ceb07826e118ba9cb2d9d87"
+  }
+]

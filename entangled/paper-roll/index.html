@@ -1,0 +1,1357 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>The Decision Archive — Entangled Shelter</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #354d43;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial,
+          sans-serif;
+        -webkit-font-smoothing: antialiased;
+        touch-action: none;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      #stage {
+        position: fixed;
+        inset: 0;
+        display: block;
+        cursor: grab;
+      }
+      #stage:active {
+        cursor: grabbing;
+      }
+
+      .hud {
+        position: fixed;
+        color: #141414;
+        z-index: 10;
+        pointer-events: none;
+        opacity: 0;
+      }
+
+      #brand {
+        top: 34px;
+        left: 40px;
+        display: flex;
+        align-items: baseline;
+        gap: 14px;
+      }
+      #brand .mark {
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.06em;
+        font-style: italic;
+      }
+      #brand .mark sup {
+        font-size: 10px;
+        font-style: normal;
+        font-weight: 600;
+        vertical-align: super;
+        letter-spacing: 0;
+      }
+      #brand .sub {
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: #6a6a6e;
+      }
+
+      #edition {
+        top: 40px;
+        right: 40px;
+        text-align: right;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #6a6a6e;
+        line-height: 1.9;
+      }
+      #edition b {
+        color: #141414;
+      }
+
+      #counter {
+        bottom: 36px;
+        right: 40px;
+        text-align: right;
+      }
+      #counter .num {
+        font-size: 40px;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        font-variant-numeric: tabular-nums;
+        line-height: 1;
+      }
+      #counter .lbl {
+        margin-top: 6px;
+        font-size: 9px;
+        font-weight: 600;
+        letter-spacing: 0.32em;
+        text-transform: uppercase;
+        color: #6a6a6e;
+      }
+
+      #hint {
+        bottom: 40px;
+        left: 40px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: #6a6a6e;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      #hint .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #e4551f;
+        animation: pulse 1.8s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.5);
+          opacity: 0.45;
+        }
+      }
+
+      #meter {
+        bottom: 108px;
+        right: 40px;
+        width: 120px;
+        height: 2px;
+        background: rgba(20, 20, 20, 0.12);
+        overflow: hidden;
+      }
+      #meter .fill {
+        height: 100%;
+        width: 0%;
+        background: #141414;
+        transition: width 0.15s linear;
+      }
+
+      @media (max-width: 720px) {
+        #brand {
+          top: 22px;
+          left: 22px;
+        }
+        #edition {
+          top: 26px;
+          right: 22px;
+        }
+        #counter {
+          bottom: 24px;
+          right: 22px;
+        }
+        #counter .num {
+          font-size: 30px;
+        }
+        #hint {
+          bottom: 28px;
+          left: 22px;
+          letter-spacing: 0.2em;
+        }
+        #meter {
+          display: none;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        #hint .dot {
+          animation: none;
+        }
+      }
+    
+      .hud { color: #f1ecdf; }
+      #brand .mark { font-family: Georgia, serif; }
+      #edition { top: 100px; }
+      #actions { position:fixed; top:30px; right:40px; z-index:30; display:flex; gap:8px; }
+      #actions a, #actions button { font:12px/1.4 Arial,sans-serif; color:#243029; text-decoration:none; border:1px solid #24302966; border-radius:22px; padding:10px 16px; background:#f2efe4e6; cursor:pointer; }
+      #records { position:fixed; z-index:40; right:30px; top:85px; bottom:100px; width:min(440px,calc(100vw - 40px)); overflow:auto; padding:24px; background:#f2efe4f5; border:1px solid #24302966; box-shadow:0 18px 70px #24302926; color:#243029; touch-action:pan-y; user-select:text; }
+      #records[hidden] { display:none; }
+      #records h1 { font:28px Georgia,serif; margin-bottom:12px; }
+      #records p { font-size:12px; line-height:1.8; }
+      #records ol { list-style:none; }
+      #records li { border-top:1px solid #24302933; padding:18px 0; }
+      #records strong { display:block; font:22px Georgia,serif; margin:7px 0; }
+      #records time { display:block; font-size:11px; margin-top:8px; }
+      #records button { border:0; background:transparent; color:#243029; padding:8px 0; cursor:pointer; text-decoration:underline; }
+      #records .memory-preview { display:block; width:100%; padding:0; text-align:left; text-decoration:none; font:inherit; }
+      .memory-preview:hover strong { text-decoration:underline; text-underline-offset:5px; }
+      .memory-preview img { display:block; width:100%; max-height:160px; object-fit:cover; margin-bottom:12px; }
+      #records .memory-open { margin-right:20px; font-weight:600; }
+      #memoryViewer { margin:auto; width:min(700px,calc(100vw - 32px)); max-height:calc(100dvh - 32px); overflow:auto; padding:28px; border:1px solid #a68b50; color:#18392e; background:#f2efe4; box-shadow:0 24px 90px #10271f66; touch-action:pan-y; user-select:text; }
+      #memoryViewer::backdrop { background:#10271fbb; backdrop-filter:blur(6px); }
+      #memoryViewer header { display:flex; align-items:center; justify-content:space-between; gap:20px; margin-bottom:20px; }
+      #memoryViewer h2 { font:28px/1.15 Georgia,serif; }
+      #memoryClose { border:1px solid #18392e66; border-radius:50%; width:40px; height:40px; flex-shrink:0; color:inherit; background:transparent; font-size:24px; cursor:pointer; }
+      #memoryImage { display:block; width:100%; max-height:48dvh; object-fit:contain; margin-bottom:20px; }
+      #memoryImage[hidden] { display:none; }
+      #memoryText,#memoryReflection { font:20px/1.6 Georgia,serif; white-space:pre-wrap; overflow-wrap:anywhere; margin-bottom:14px; }
+      #memoryDate { font-size:12px; opacity:.7; }
+      button:focus-visible { outline:2px solid #18392e; outline-offset:4px; }
+      #decisionCard[hidden], #noteContent[hidden] { display:none; }
+      #memoryViewer.decision-view { padding:0; background:#e9e2ce; width:min(660px,calc(100vw - 32px)); }
+      .decision-view > header { padding:16px 24px; margin:0 !important; background:#18392e; color:#e8d6a1; }
+      .decision-view > header h2 { font:18px Georgia,serif !important; }
+      .decision-view #memoryClose { color:#e8d6a1; border-color:#e8d6a1; }
+      .decision-photo { position:relative; height:clamp(160px,35dvh,390px); background:#e4dbc3; }
+      .decision-photo img { width:100%; height:100%; object-fit:contain; display:block; }
+      .decision-photo img[hidden] { display:none; }
+      .decision-photo > span { position:absolute; left:15px; bottom:14px; padding:6px 9px; background:#f3f0e7eb; font-size:10px; letter-spacing:2px; }
+      #decisionIdea { height:100%; display:grid; place-content:center; text-align:center; font:70px Georgia,serif; }
+      #decisionIdea[hidden] { display:none; }
+      #decisionIdea small { font:10px Arial,sans-serif; letter-spacing:2px; }
+      .decision-receipt { position:relative; padding:28px 35px 100px; background:#e9e2ce; text-align:center; }
+      .receipt-top { display:flex; justify-content:space-between; padding-bottom:18px; border-bottom:1px solid #b6ae96; font-size:9px; letter-spacing:2px; }
+      .receipt-label { margin-top:26px; font-size:11px; color:#7c7864; }
+      #decisionName { margin-top:12px; font:38px/1.15 Georgia,serif; overflow-wrap:anywhere; }
+      #decisionDetail { margin-top:12px; font-size:13px; line-height:1.6; }
+      .receipt-meta { display:flex; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-top:25px; padding-top:16px; border-top:1px dashed #b6ae96; font-size:8px; }
+      .receipt-seal { position:absolute; right:25px; bottom:15px; display:grid; place-content:center; width:72px; height:72px; border:2px solid #9a6a4280; border-radius:50%; color:#9a6a42; font-size:10px; letter-spacing:2px; line-height:2; transform:rotate(-9deg); }
+      #decisionDate { display:block; text-align:left; font-size:10px; margin-top:16px; color:#7c7864; }
+      #decisionReflection { white-space:pre-wrap; overflow-wrap:anywhere; text-align:left; font:16px/1.5 Georgia,serif; margin-top:16px; }
+      #hint { letter-spacing:.08em; }
+      @media(max-width:720px) { #brand .sub { display:none; } #actions { top:20px; right:16px; gap:5px; } #actions a,#actions button { font-size:10px; padding:8px 10px; } #edition { top:80px; right:22px; font-size:8px; } #hint { font-size:9px; max-width:60%; } #records { right:20px; } }
+    </style>
+  </head>
+  <body>
+    <canvas id="stage" aria-label="Three-dimensional paper roll"></canvas>
+    <nav id="actions" aria-label="Archive controls"><a href="/" target="_top">Return to shelter ↖</a><button id="listToggle" aria-expanded="false" aria-controls="records">Decision index</button><button id="bankButton">Next folio</button></nav>
+    <section id="records" hidden aria-label="Decision history"><h1>The Decision Archive</h1><p id="recordCount"></p><ol id="recordList"></ol></section>
+
+    <dialog id="memoryViewer" aria-labelledby="memoryTitle">
+      <header><h2 id="memoryTitle"></h2><button id="memoryClose" aria-label="Close memory" autofocus>×</button></header>
+      <div id="noteContent"><img id="memoryImage" alt="" hidden />
+      <p id="memoryText"></p><p id="memoryReflection"></p><time id="memoryDate"></time></div>
+      <article id="decisionCard" hidden aria-labelledby="decisionName">
+        <div class="decision-photo"><img id="decisionImage" alt="" /><div id="decisionIdea" hidden>✳<small>YOUR IDEA</small></div><span id="decisionLabel"></span></div>
+        <div class="decision-receipt">
+          <div class="receipt-top"><span>ENTANGLED SHELTER</span><span>♥</span></div>
+          <p class="receipt-label">THE ANSWER FOR TODAY</p><h3 id="decisionName"></h3><p id="decisionDetail"></p>
+          <div class="receipt-meta"><span id="decisionMethod"></span><span>YOU CHOSE. THAT’S ENOUGH.</span></div>
+          <p id="decisionReflection"></p><time id="decisionDate"></time><div class="receipt-seal">DECIDED<br />✳</div>
+        </div>
+      </article>
+    </dialog>
+    <div class="hud" id="brand">
+      <div class="mark">ES<sup>✳</sup></div>
+      <div class="sub">Entangled Shelter</div>
+    </div>
+
+    <div class="hud" id="edition">
+      Traces of decisions<br /><b>The Living Ledger</b>
+    </div>
+
+    <div class="hud" id="counter">
+      <div class="num" id="counterNum">0000</div>
+      <div class="lbl">Leaves unfurled</div>
+    </div>
+
+    <div class="hud" id="meter"><div class="fill" id="meterFill"></div></div>
+
+    <div class="hud" id="hint">
+      <div class="dot"></div>
+      <span id="hintText">Move to steer &mdash; click to pause</span>
+    </div>
+
+    <script src="./three-r128.min.js"></script>
+    <script src="./gsap.min.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        /* ============================================================
+     VX — THE PRINTING ROLL
+     An endless strip of paper unrolls behind a heavy roll,
+     printing portfolio pages in its wake. One texture atlas,
+     one ribbon mesh, fixed vertex budget, zero per-frame
+     allocations. Everything procedural, nothing external.
+     ============================================================ */
+
+        // ---------- Constants ----------
+        var RIBBON_W = 1.5; // paper width
+        var ATLAS_N = 8; // pages in the atlas
+        var ROLL_R = 1.75;
+        // one full revolution lays down exactly one atlas — this is what makes the
+        // print on the barrel hand off to the floor with zero drift, forever
+        var CARD_LEN = (2 * Math.PI * ROLL_R) / ATLAS_N;
+        var INNER_R = ROLL_R * 0.52;
+        var STEP = 0.12; // path sampling distance
+        var MAX_PTS = 760; // fixed history budget (~91 world units of trail)
+        var CURL_SEG = 16; // segments peeling off the roll
+        var MAX_SEG = MAX_PTS + CURL_SEG + 2;
+        var FLOOR_RGB = "vec3(0.208, 0.302, 0.263)";
+
+        // ---------- Renderer / scene ----------
+        var canvas = document.getElementById("stage");
+        var renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          antialias: true,
+        });
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+
+        var scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x354d43);
+        scene.fog = new THREE.Fog(0x354d43, 24, 58);
+
+        var camera = new THREE.PerspectiveCamera(
+          32,
+          window.innerWidth / window.innerHeight,
+          0.5,
+          200,
+        );
+
+        // ---------- Lighting ----------
+        var hemi = new THREE.HemisphereLight(0xffffff, 0xd6d6da, 0.95);
+        scene.add(hemi);
+
+        var sun = new THREE.DirectionalLight(0xffffff, 0.85);
+        sun.castShadow = true;
+        sun.shadow.mapSize.set(2048, 2048);
+        sun.shadow.camera.left = -9;
+        sun.shadow.camera.right = 9;
+        sun.shadow.camera.top = 9;
+        sun.shadow.camera.bottom = -9;
+        sun.shadow.camera.near = 1;
+        sun.shadow.camera.far = 40;
+        sun.shadow.bias = -0.0004;
+        sun.shadow.normalBias = 0.02;
+        scene.add(sun);
+        scene.add(sun.target);
+
+        var fill = new THREE.DirectionalLight(0xffffff, 0.22);
+        fill.position.set(-6, 4, -8);
+        scene.add(fill);
+
+        // ---------- Floor ----------
+        var floor = new THREE.Mesh(
+          new THREE.PlaneGeometry(400, 400),
+          new THREE.MeshStandardMaterial({
+            color: 0x354d43,
+            roughness: 1.0,
+            metalness: 0,
+          }),
+        );
+        floor.rotation.x = -Math.PI / 2;
+        floor.receiveShadow = true;
+        scene.add(floor);
+
+        // ============================================================
+        // Procedural texture atlas — 8 portfolio pages, one canvas
+        // ============================================================
+        var seed = 7;
+        function rand() {
+          seed = (seed * 16807) % 2147483647;
+          return (seed - 1) / 2147483646;
+        }
+
+        var archiveRecords = [];
+        var archiveNotes = {};
+        var archiveFavourite = "";
+        var archiveBank = 0;
+        var stickyKey = 'entangled-shelter:stickies:v1';
+        var archiveKey = 'entangled-shelter:decisions:v1';
+        var labels = {food:'TASTE',style:'STYLE',travel:'WANDER'};
+        var modeLabels = {poker:'FORTUNE DECK',rps:'A FAIR FIGHT',guess:'TRUST YOUR HUNCH'};
+        function validStickyImage(v){return typeof v==='string' && v.length<900000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(v);}
+        function readArchive() {
+          try {
+            var data = JSON.parse(localStorage.getItem(archiveKey) || '[]');
+            archiveRecords = Array.isArray(data) ? data.filter(function(r) {
+              return r && typeof r.id === 'string' && Object.hasOwn(labels,r.categoryId) &&
+                Object.hasOwn(modeLabels,r.mode) && r.option && typeof r.option.name === 'string' &&
+                typeof r.option.detail === 'string' && typeof r.decidedAt === 'string' && Number.isFinite(Date.parse(r.decidedAt));
+            }).slice(0,500) : [];
+          } catch (_) { archiveRecords = []; }
+          try { archiveNotes=JSON.parse(localStorage.getItem('entangled-shelter:notes:v1')||'{}'); if(!archiveNotes || typeof archiveNotes!=='object') archiveNotes={}; } catch (_) {archiveNotes={};}
+          var counts={}; archiveRecords.forEach(function(r){var key=r.categoryId+':'+r.option.id; if(!counts[key]) counts[key]={name:r.option.name,count:0};counts[key].count++;});
+          var ranked=Object.values(counts).sort(function(a,b){return b.count-a.count;});
+          archiveFavourite=ranked.length ? ranked[0].name+' / '+ranked[0].count+' TIMES' : 'YOUR STORY IS STILL TO COME';
+          try {
+            var stickies=JSON.parse(localStorage.getItem(stickyKey)||'[]');
+            if(Array.isArray(stickies)) archiveRecords=stickies.filter(function(n){return n && typeof n.id==='string' && typeof n.text==='string' && n.text.trim() && n.text.length<=240 && (validStickyImage(n.image)||['✳','♥','☾','✿','♠','☀'].includes(n.motif)) && ['#f2dfa0','#dbb9ac','#bdd1b8'].includes(n.colour) && typeof n.at==='string' && Number.isFinite(Date.parse(n.at));}).slice(0,100).map(function(n){return {id:n.id,sticky:true,motif:n.motif,image:n.image,colour:n.colour,categoryId:'travel',mode:'guess',option:{name:'MEMORY NOTE',detail:n.text},decidedAt:n.at};}).concat(archiveRecords);
+          } catch (_) {}
+          archiveBank = Math.min(archiveBank, Math.max(0, Math.ceil(archiveRecords.length / 8) - 1));
+        }
+        function fullTime(value) {
+          return new Date(value).toLocaleString('en-GB', {year:'numeric',month:'short',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false});
+        }
+        var photoCache = {};
+        var refreshPhotoAtlas = null;
+        var photoRefreshPending = false;
+        var folioPhotos = [
+          ['breakfast','TASTE / SLOW MORNINGS'],
+          ['coast','WANDER / COLOUR BY THE SEA'],
+          ['boutique','STYLE / THE DAILY EDIT'],
+          ['pasta','TASTE / BEFORE THE SUPPER'],
+          ['alps','WANDER / STILL WATERS'],
+          ['shoes','STYLE / STEP OUTSIDE'],
+          ['coffee','TASTE / A MOMENT TO PAUSE'],
+          ['station','WANDER / THE NEXT DEPARTURE']
+        ];
+        function photoFor(record, index) {
+          if (record) {
+            var choices = {food:['breakfast','pasta','coffee'],style:['boutique','shoes'],travel:['coast','alps','station']}[record.categoryId];
+            return choices[index % choices.length];
+          }
+          return folioPhotos[index % folioPhotos.length][0];
+        }
+        function photograph(id, source) {
+          if (!photoCache[id]) {
+            var img = new Image(); photoCache[id] = img;
+            img.onload = function() {
+              if (photoRefreshPending) return;
+              photoRefreshPending = true;
+              requestAnimationFrame(function() {
+                photoRefreshPending = false;
+                if (refreshPhotoAtlas) refreshPhotoAtlas();
+              });
+            };
+            img.src = source || '/entangled-shelter-pages/entangled/roll-photos/' + id + '.webp';
+          }
+          return photoCache[id];
+        }
+        function coverPhoto(g, img, x, y, w, h) {
+          if (!img.complete || !img.naturalWidth) return;
+          var scale = Math.max(w/img.naturalWidth,h/img.naturalHeight);
+          var sw=w/scale, sh=h/scale;
+          g.drawImage(img,(img.naturalWidth-sw)/2,(img.naturalHeight-sh)/2,sw,sh,x,y,w,h);
+        }
+        readArchive();
+        function buildAtlas() {
+          var CELL = 512;
+          var cv = document.createElement('canvas');
+          cv.width = CELL * ATLAS_N;
+          cv.height = CELL;
+          var g = cv.getContext('2d');
+          g.fillStyle = '#f6f3e9';
+          g.fillRect(0,0,cv.width,cv.height);
+          for(var grain=0;grain<2600;grain++) {
+            g.fillStyle='rgba(120,116,105,'+(0.015+rand()*0.03)+')';
+            g.fillRect(rand()*cv.width,rand()*cv.height,1+rand()*2,1);
+          }
+          var bank = archiveRecords.slice(archiveBank * 8, archiveBank * 8 + 8);
+          function line(text,x,y,width,font) {
+            g.font=font; var size=parseInt(font,10);
+            while(g.measureText(text).width > width && size > 13) { size--; g.font=size+'px Georgia, serif'; }
+            g.fillText(text,x,y,width);
+          }
+          for(var c=0;c<ATLAS_N;c++) {
+            var x=c*CELL; var r=bank.length ? bank[c % bank.length] : null;
+            if(r && r.sticky) {
+              g.fillStyle=r.colour;g.fillRect(x+18,18,476,476);
+              g.strokeStyle='#887241';g.lineWidth=2;g.strokeRect(x+29,29,454,454);
+              var hasPhoto=validStickyImage(r.image);
+              if(hasPhoto){
+                var uploaded=photograph(r.image,r.image);
+                if(uploaded.complete && uploaded.naturalWidth){
+                  var fit=Math.min(420/uploaded.naturalWidth,230/uploaded.naturalHeight);
+                  var pw=uploaded.naturalWidth*fit,ph=uploaded.naturalHeight*fit;
+                  g.drawImage(uploaded,x+46+(420-pw)/2,48+(230-ph)/2,pw,ph);
+                }
+              }else{g.fillStyle='#213d30';g.font='80px Georgia, serif';g.fillText(r.motif,x+47,124);}
+              g.fillStyle='#213d30';g.font='16px Georgia, serif';g.fillText('A NOTE TO KEEP',x+(hasPhoto?48:163),hasPhoto?309:76);
+              g.fillStyle='#213d30';g.font='25px Georgia, sans-serif';
+              var rows=[],row='';
+              Array.from(r.option.detail).forEach(function(ch){if(ch==='\n'){rows.push(row);row='';}else if(g.measureText(row+ch).width>400){rows.push(row);row=ch;}else row+=ch;});
+              if(row)rows.push(row);
+              var fontSize=25;
+              if(rows.length>9){fontSize=19;g.font=fontSize+'px Georgia, sans-serif';rows=[];row='';Array.from(r.option.detail).forEach(function(ch){if(ch==='\n'){rows.push(row);row='';}else if(g.measureText(row+ch).width>400){rows.push(row);row=ch;}else row+=ch;});if(row)rows.push(row);}
+              var rowHeight=Math.min(fontSize+4,(hasPhoto?115:280)/Math.max(1,rows.length));
+              g.font=Math.min(fontSize,Math.max(1,rowHeight-2))+'px Georgia, sans-serif';
+              rows.forEach(function(t,i){g.fillText(t,x+48,(hasPhoto?335:164)+i*rowHeight,400);});
+              g.font='13px Georgia, serif';g.fillText(fullTime(r.decidedAt),x+48,470,400);
+              continue;
+            }
+            var id=photoFor(r,c);
+            // Full-width photographic panel makes the imagery readable on the curved paper.
+            g.fillStyle='#d8ded3'; g.fillRect(x+18,18,476,330);
+            coverPhoto(g,photograph(id),x+18,18,476,330);
+            var shade=g.createLinearGradient(0,220,0,348);
+            shade.addColorStop(0,'rgba(15,28,22,0)'); shade.addColorStop(1,'rgba(15,28,22,.78)');
+            g.fillStyle=shade;g.fillRect(x+18,220,476,128);
+            g.fillStyle='#fff9e9';
+            line('ES / '+(r ? labels[r.categoryId] : folioPhotos[c%folioPhotos.length][1].split(' / ')[0]),x+36,53,430,'19px Georgia, serif');
+            line(r ? r.option.name : folioPhotos[c%folioPhotos.length][1].split(' / ')[1],x+36,324,430,'32px Georgia, serif');
+            g.fillStyle='#243029';
+            line(r ? modeLabels[r.mode] : 'THE POSSIBILITY COLLECTION',x+30,382,452,'17px Georgia, serif');
+            line(r && typeof archiveNotes[r.id]==='string' && archiveNotes[r.id] ? archiveNotes[r.id] : r ? r.option.detail : typeof archiveNotes.reflection==='string' && archiveNotes.reflection ? archiveNotes.reflection : 'A little chance. A little courage.',x+30,415,452,'19px Georgia, serif');
+            g.fillRect(x+30,438,452,1);
+            line(r ? 'MOST RETURNED TO: '+archiveFavourite : archiveFavourite,x+30,464,452,'14px Georgia, serif');
+            line(r ? 'DECISION '+String(archiveBank*8+c%bank.length+1).padStart(4,'0') : 'FOLIO '+String(c+1).padStart(2,'0')+' / ENTANGLED SHELTER',x+30,490,452,'13px Georgia, serif');
+          }
+          var tex=new THREE.CanvasTexture(cv);
+          tex.wrapS=THREE.RepeatWrapping;
+          tex.wrapT=THREE.ClampToEdgeWrapping;
+          tex.encoding=THREE.sRGBEncoding;
+          tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+          return tex;
+        }
+        function installArchiveControls() {
+          var list=document.getElementById('recordList');
+          var panel=document.getElementById('records');
+          var toggle=document.getElementById('listToggle');
+          var next=document.getElementById('bankButton');
+          var viewer=document.getElementById('memoryViewer');
+          var returnFocus=null;
+          function imageForMemory(r,index) {
+            return r.sticky ? (validStickyImage(r.image) ? r.image : '') : (typeof r.option.image==='string' && /^\/entangled\/[a-zA-Z0-9_./-]+$/.test(r.option.image) && !r.option.image.includes('..') ? r.option.image : '');
+          }
+          function openMemory(r,index,trigger) {
+            returnFocus=trigger;
+            viewer.classList.toggle('decision-view',!r.sticky);
+            document.getElementById('noteContent').hidden=!r.sticky;
+            document.getElementById('decisionCard').hidden=!!r.sticky;
+            if(!r.sticky) {
+              document.getElementById('decisionName').textContent=r.option.name;
+              document.getElementById('decisionDetail').textContent=r.option.detail;
+              document.getElementById('decisionLabel').textContent=labels[r.categoryId]+' / DECIDED';
+              document.getElementById('decisionMethod').textContent=labels[r.categoryId]+' / '+modeLabels[r.mode];
+              document.getElementById('decisionReflection').textContent=typeof archiveNotes[r.id]==='string' ? archiveNotes[r.id] : '';
+              var resultDate=document.getElementById('decisionDate');resultDate.dateTime=r.decidedAt;resultDate.textContent=fullTime(r.decidedAt);
+              var resultImage=document.getElementById('decisionImage'), resultSource=imageForMemory(r,index);
+              resultImage.hidden=!resultSource;document.getElementById('decisionIdea').hidden=!!resultSource;
+              resultImage.alt=r.option.name;
+              resultImage.onerror=function(){resultImage.hidden=true;document.getElementById('decisionIdea').hidden=false;};
+              if(resultSource) resultImage.src=resultSource;else resultImage.removeAttribute('src');
+            }
+            document.getElementById('memoryTitle').textContent=r.sticky ? 'A little note to keep' : 'Entangled Shelter / Your decision';
+            var image=document.getElementById('memoryImage');
+            var source=imageForMemory(r,index);
+            image.hidden=!source;
+            if(source) image.src=source; else image.removeAttribute('src');
+            image.alt=r.sticky ? 'Uploaded memory photograph' : r.option.name;
+            document.getElementById('memoryText').textContent=r.option.detail;
+            document.getElementById('memoryReflection').textContent=typeof archiveNotes[r.id]==='string' ? archiveNotes[r.id] : '';
+            var date=document.getElementById('memoryDate'); date.dateTime=r.decidedAt; date.textContent=fullTime(r.decidedAt);
+            viewer.style.background=r.sticky ? r.colour : '#e9e2ce';
+            setPaused(true); viewer.showModal();
+          }
+          document.getElementById('memoryClose').addEventListener('click',function(){viewer.close();});
+          viewer.addEventListener('close',function(){if(returnFocus && returnFocus.isConnected) returnFocus.focus();});
+          viewer.addEventListener('click',function(e){var rect=viewer.getBoundingClientRect();if(e.target===viewer&&(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)) viewer.close();});
+          function refreshTexture() {
+            var nextTexture=buildAtlas();
+            atlasTex.image=nextTexture.image; atlasTex.needsUpdate=true;
+            barrelTex.image=nextTexture.image; barrelTex.needsUpdate=true;
+            nextTexture.dispose();
+            next.hidden=archiveRecords.length<=8;
+            next.textContent='FOLIO '+(archiveBank+1)+' / '+Math.max(1,Math.ceil(archiveRecords.length/8))+' ↻';
+          }
+          function renderList() {
+            list.replaceChildren();
+            document.getElementById('recordCount').textContent=archiveRecords.length ? archiveRecords.length+' memories preserved · notes and decisions' : 'No decisions yet. Return to the shelter and accept a result to leave your first trace.';
+            archiveRecords.forEach(function(r,index) {
+              var li=document.createElement('li');
+              var category=document.createElement('p'); category.textContent=r.sticky ? 'MEMORY NOTE'+(r.image?' · PHOTO':' · '+r.motif) : labels[r.categoryId]+' · '+modeLabels[r.mode];
+              var name=document.createElement('strong'); name.textContent=r.option.name;
+              var detail=document.createElement('p'); detail.textContent=r.option.detail;
+              var time=document.createElement('time'); time.dateTime=r.decidedAt; time.textContent=fullTime(r.decidedAt);
+              var view=document.createElement('button'); view.textContent='Print on the roll ↗';
+              view.addEventListener('click',function(){archiveBank=Math.floor(index/8);refreshTexture();panel.hidden=true;toggle.setAttribute('aria-expanded','false');setPaused(false);toggle.focus();});
+              var note=document.createElement('p'); note.textContent=typeof archiveNotes[r.id]==='string' ? archiveNotes[r.id] : '';
+              var preview=document.createElement('button'); preview.className='memory-preview'; preview.setAttribute('aria-label','View memory: '+r.option.name);
+              preview.append(category,name,detail,note,time);
+              preview.addEventListener('click',function(){openMemory(r,index,preview);});
+              li.append(preview,view);list.append(li);
+            });
+          }
+          toggle.addEventListener('click',function(){panel.hidden=!panel.hidden;toggle.setAttribute('aria-expanded',String(!panel.hidden));setPaused(!panel.hidden);});
+          next.addEventListener('click',function(){archiveBank=(archiveBank+1)%Math.max(1,Math.ceil(archiveRecords.length/8));refreshTexture();});
+          window.addEventListener('keydown',function(e){if(viewer.open || e.defaultPrevented) return;if(e.key==='Escape'&&!panel.hidden){panel.hidden=true;toggle.setAttribute('aria-expanded','false');setPaused(false);toggle.focus();}else if(e.code==='Space' && e.target===document.body){e.preventDefault();setPaused(!paused);}});
+          window.addEventListener('storage',function(e){if(e.key===stickyKey||e.key===archiveKey||e.key==='entangled-shelter:notes:v1'||e.key===null){if(e.key===stickyKey) archiveBank=0;readArchive();refreshTexture();renderList();}});
+          document.getElementById('stage').addEventListener('webglcontextlost',function(e){e.preventDefault();document.getElementById('hintText').textContent='The scene paused unexpectedly. Refresh to restore it; your decisions remain available.';});
+          refreshPhotoAtlas=refreshTexture;
+          refreshTexture();renderList();
+        }
+
+
+        // Spiral cap: hundreds of wound paper layers, drawn once
+        function buildCapTexture() {
+          var S = 1024;
+          var cv = document.createElement("canvas");
+          cv.width = S;
+          cv.height = S;
+          var g = cv.getContext("2d");
+          var cx = S / 2,
+            innerPx = (INNER_R / ROLL_R) * (S / 2);
+
+          g.fillStyle = "#f2f1ec";
+          g.fillRect(0, 0, S, S);
+
+          for (var r = innerPx; r < S / 2 - 1; r += 2.1) {
+            var a = 0.045 + rand() * 0.1 + (r % 29 < 2.2 ? 0.12 : 0);
+            g.strokeStyle = "rgba(112,110,102," + a.toFixed(3) + ")";
+            g.lineWidth = rand() < 0.12 ? 1.6 : 0.8;
+            g.beginPath();
+            g.arc(cx, cx, r, 0, Math.PI * 2);
+            g.stroke();
+          }
+          // spiral cut line
+          g.strokeStyle = "rgba(90,88,80,0.35)";
+          g.lineWidth = 1.4;
+          g.beginPath();
+          var turns = 26;
+          for (var t = 0; t <= 1; t += 0.002) {
+            var rr = innerPx + t * (S / 2 - innerPx - 2);
+            var an = t * turns * Math.PI * 2;
+            var px = cx + Math.cos(an) * rr,
+              py = cx + Math.sin(an) * rr;
+            if (t === 0) g.moveTo(px, py);
+            else g.lineTo(px, py);
+          }
+          g.stroke();
+          // inner shading
+          var sh = g.createRadialGradient(
+            cx,
+            cx,
+            innerPx,
+            cx,
+            cx,
+            innerPx + 90,
+          );
+          sh.addColorStop(0, "rgba(60,58,52,0.32)");
+          sh.addColorStop(1, "rgba(60,58,52,0)");
+          g.fillStyle = sh;
+          g.beginPath();
+          g.arc(cx, cx, S / 2, 0, Math.PI * 2);
+          g.fill();
+          // outer rim
+          var rim = g.createRadialGradient(cx, cx, S / 2 - 26, cx, cx, S / 2);
+          rim.addColorStop(0, "rgba(60,58,52,0)");
+          rim.addColorStop(1, "rgba(60,58,52,0.22)");
+          g.fillStyle = rim;
+          g.beginPath();
+          g.arc(cx, cx, S / 2, 0, Math.PI * 2);
+          g.fill();
+
+          var tex = new THREE.CanvasTexture(cv);
+          tex.encoding = THREE.sRGBEncoding;
+          tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+          return tex;
+        }
+
+        // Blob shadow under the roll
+        function buildBlobTexture() {
+          var S = 256;
+          var cv = document.createElement("canvas");
+          cv.width = S;
+          cv.height = S;
+          var g = cv.getContext("2d");
+          var gr = g.createRadialGradient(S / 2, S / 2, 6, S / 2, S / 2, S / 2);
+          gr.addColorStop(0, "rgba(20,20,22,0.34)");
+          gr.addColorStop(0.55, "rgba(20,20,22,0.14)");
+          gr.addColorStop(1, "rgba(20,20,22,0)");
+          g.fillStyle = gr;
+          g.fillRect(0, 0, S, S);
+          return new THREE.CanvasTexture(cv);
+        }
+
+        var atlasTex = buildAtlas();
+        var capTex = buildCapTexture();
+
+        // ============================================================
+        // The roll
+        // ============================================================
+        var rollGroup = new THREE.Group(); // yaw + position
+        var spinner = new THREE.Group(); // rolls about local X
+        rollGroup.add(spinner);
+        scene.add(rollGroup);
+
+        // The barrel wears the same atlas. With circumference == atlas length the
+        // texture is glued to the mesh (repeat 1, constant 0.25 phase) and the card
+        // touching the floor is always the exact card the ribbon prints there.
+        var barrelTex = atlasTex.clone();
+        barrelTex.needsUpdate = true;
+        barrelTex.wrapS = THREE.RepeatWrapping;
+        barrelTex.wrapT = THREE.ClampToEdgeWrapping;
+        barrelTex.repeat.set(1, 1);
+        barrelTex.offset.x = 0.25;
+        var paperMat = new THREE.MeshStandardMaterial({
+          map: barrelTex,
+          roughness: 0.92,
+          metalness: 0,
+        });
+
+        var barrelGeo = new THREE.CylinderGeometry(
+          ROLL_R,
+          ROLL_R,
+          RIBBON_W,
+          96,
+          1,
+          true,
+        );
+        barrelGeo.rotateZ(Math.PI / 2);
+        var barrel = new THREE.Mesh(barrelGeo, paperMat);
+        barrel.castShadow = true;
+        spinner.add(barrel);
+
+        var capMat = new THREE.MeshStandardMaterial({
+          map: capTex,
+          roughness: 0.95,
+          metalness: 0,
+        });
+        var capGeo = new THREE.RingGeometry(INNER_R, ROLL_R, 96, 1);
+        var capR = new THREE.Mesh(capGeo, capMat);
+        capR.rotation.y = Math.PI / 2;
+        capR.position.x = RIBBON_W / 2 + 0.001;
+        capR.castShadow = true;
+        spinner.add(capR);
+        var capL = new THREE.Mesh(capGeo, capMat);
+        capL.rotation.y = -Math.PI / 2;
+        capL.position.x = -RIBBON_W / 2 - 0.001;
+        capL.castShadow = true;
+        spinner.add(capL);
+
+        var coreGeo = new THREE.CylinderGeometry(
+          INNER_R,
+          INNER_R,
+          RIBBON_W * 1.002,
+          48,
+          1,
+          true,
+        );
+        coreGeo.rotateZ(Math.PI / 2);
+        var core = new THREE.Mesh(
+          coreGeo,
+          new THREE.MeshStandardMaterial({
+            color: 0xdad7cf,
+            roughness: 1,
+            metalness: 0,
+            side: THREE.DoubleSide,
+          }),
+        );
+        spinner.add(core);
+
+        var blob = new THREE.Mesh(
+          new THREE.PlaneGeometry(ROLL_R * 3.4, RIBBON_W * 2.2),
+          new THREE.MeshBasicMaterial({
+            map: buildBlobTexture(),
+            transparent: true,
+            depthWrite: false,
+          }),
+        );
+        blob.rotation.x = -Math.PI / 2;
+        blob.renderOrder = 1;
+        scene.add(blob);
+
+        // ============================================================
+        // Ribbon — one fixed-budget mesh, rebuilt in place each frame
+        // ============================================================
+        var VERTS = (MAX_SEG + 1) * 2;
+        var posArr = new Float32Array(VERTS * 3);
+        var nrmArr = new Float32Array(VERTS * 3);
+        var uvArr = new Float32Array(VERTS * 2);
+        var sArr = new Float32Array(VERTS);
+        var idxArr = new Uint16Array(MAX_SEG * 6);
+        for (var iq = 0; iq < MAX_SEG; iq++) {
+          var v0 = iq * 2;
+          idxArr[iq * 6 + 0] = v0;
+          idxArr[iq * 6 + 1] = v0 + 1;
+          idxArr[iq * 6 + 2] = v0 + 2;
+          idxArr[iq * 6 + 3] = v0 + 1;
+          idxArr[iq * 6 + 4] = v0 + 3;
+          idxArr[iq * 6 + 5] = v0 + 2;
+        }
+
+        var ribbonGeo = new THREE.BufferGeometry();
+        ribbonGeo.setAttribute(
+          "position",
+          new THREE.BufferAttribute(posArr, 3).setUsage(THREE.DynamicDrawUsage),
+        );
+        ribbonGeo.setAttribute(
+          "normal",
+          new THREE.BufferAttribute(nrmArr, 3).setUsage(THREE.DynamicDrawUsage),
+        );
+        ribbonGeo.setAttribute(
+          "uv",
+          new THREE.BufferAttribute(uvArr, 2).setUsage(THREE.DynamicDrawUsage),
+        );
+        ribbonGeo.setAttribute(
+          "aS",
+          new THREE.BufferAttribute(sArr, 1).setUsage(THREE.DynamicDrawUsage),
+        );
+        ribbonGeo.setIndex(new THREE.BufferAttribute(idxArr, 1));
+        ribbonGeo.setDrawRange(0, 0);
+
+        var uTailS = { value: 0 };
+
+        var ribbonMat = new THREE.MeshStandardMaterial({
+          map: atlasTex,
+          roughness: 0.9,
+          metalness: 0,
+          side: THREE.DoubleSide,
+        });
+        ribbonMat.onBeforeCompile = function (shader) {
+          shader.uniforms.uTailS = uTailS;
+          shader.vertexShader = shader.vertexShader
+            .replace(
+              "#include <common>",
+              "#include <common>\nattribute float aS;\nvarying float vS;",
+            )
+            .replace(
+              "#include <begin_vertex>",
+              "#include <begin_vertex>\nvS = aS;",
+            );
+          shader.fragmentShader = shader.fragmentShader
+            .replace(
+              "#include <common>",
+              "#include <common>\nvarying float vS;\nuniform float uTailS;",
+            )
+            .replace(
+              "#include <map_fragment>",
+              "#include <map_fragment>\n" +
+                // tail dissolves into the floor before recycling
+                "float tail = smoothstep(uTailS, uTailS + 3.0, vS);\n" +
+                "diffuseColor.rgb = mix(" +
+                FLOOR_RGB +
+                ", diffuseColor.rgb, tail);",
+            );
+        };
+
+        var ribbon = new THREE.Mesh(ribbonGeo, ribbonMat);
+        ribbon.frustumCulled = false;
+        ribbon.receiveShadow = true;
+        scene.add(ribbon);
+
+        // ============================================================
+        // Motion solver — heavy spring-damper, real rolling
+        // ============================================================
+        var pos = new THREE.Vector2(0, 0);
+        var vel = new THREE.Vector2(0, 0);
+        var target = new THREE.Vector2(0, 0);
+        var yaw = 0;
+        var sTotal = 0;
+        var REV = 2 * Math.PI * ROLL_R;
+
+        var SPRING = 16.0;
+        var DAMP = 5.4;
+        var MAX_SPEED = 9.0;
+
+        // path history — preallocated ring of plain records
+        var hx = new Float32Array(MAX_PTS);
+        var hz = new Float32Array(MAX_PTS);
+        var hs = new Float32Array(MAX_PTS);
+        var head = -1; // index of newest
+        var count = 0;
+
+        function pushPoint(x, z, s) {
+          head = (head + 1) % MAX_PTS;
+          hx[head] = x;
+          hz[head] = z;
+          hs[head] = s;
+          if (count < MAX_PTS) count++;
+        }
+        function getPt(i, out) {
+          // i = 0 oldest … count-1 newest
+          var k = (head - (count - 1) + i + MAX_PTS * 2) % MAX_PTS;
+          out.x = hx[k];
+          out.z = hz[k];
+          out.s = hs[k];
+        }
+
+        pushPoint(0, 0, 0);
+
+        function angleLerp(a, b, t) {
+          var d = b - a;
+          while (d > Math.PI) d -= Math.PI * 2;
+          while (d < -Math.PI) d += Math.PI * 2;
+          return a + d * t;
+        }
+
+        var _acc = new THREE.Vector2();
+        var _dp = new THREE.Vector2();
+
+        function stepMotion(dt) {
+          _acc.copy(target).sub(pos).multiplyScalar(SPRING);
+          _acc.addScaledVector(vel, -DAMP);
+          vel.addScaledVector(_acc, dt);
+          var sp = vel.length();
+          if (sp > MAX_SPEED) vel.multiplyScalar(MAX_SPEED / sp);
+          _dp.copy(vel).multiplyScalar(dt);
+          var ds = _dp.length();
+          if (ds > 1e-6) {
+            pos.add(_dp);
+            sTotal += ds;
+            if (sp > 0.06) {
+              var ty = Math.atan2(vel.x, vel.y); // vel.y is world z
+              yaw = angleLerp(yaw, ty, 1 - Math.exp(-7 * dt));
+            }
+            // sample the path by distance, never by time
+            var lx = hx[head],
+              lz = hz[head];
+            var ddx = pos.x - lx,
+              ddz = pos.y - lz;
+            if (ddx * ddx + ddz * ddz >= STEP * STEP) {
+              pushPoint(pos.x, pos.y, sTotal);
+            }
+          }
+        }
+
+        // ============================================================
+        // Ribbon rebuild — zero allocations
+        // ============================================================
+        var _a = { x: 0, z: 0, s: 0 };
+        var _b = { x: 0, z: 0, s: 0 };
+        var _c = { x: 0, z: 0, s: 0 };
+        var CURL_MAX = 0.85; // radians of peel wrapped onto the barrel
+
+        function writeVert(vi, x, y, z, nx, ny, nz, u, vv, s) {
+          var p3 = vi * 3,
+            p2 = vi * 2;
+          posArr[p3] = x;
+          posArr[p3 + 1] = y;
+          posArr[p3 + 2] = z;
+          nrmArr[p3] = nx;
+          nrmArr[p3 + 1] = ny;
+          nrmArr[p3 + 2] = nz;
+          uvArr[p2] = u;
+          uvArr[p2 + 1] = vv;
+          sArr[vi] = s;
+        }
+
+        function rebuildRibbon() {
+          var n = count;
+          if (n < 2) {
+            ribbonGeo.setDrawRange(0, 0);
+            return;
+          }
+
+          getPt(0, _a);
+          var sTail = _a.s;
+          var half = RIBBON_W / 2;
+          var vi = 0;
+          var uSpan = CARD_LEN * ATLAS_N;
+          var uBase = Math.floor(sTail / uSpan) * uSpan;
+
+          // smoothed forward from yaw — stable even when velocity crosses zero
+          var fx = Math.sin(yaw),
+            fz = Math.cos(yaw);
+          var sxc = fz,
+            szc = -fx;
+
+          // ---- flat printed trail ----
+          var ptx = 0,
+            ptz = 0,
+            hasPrev = false;
+          for (var i = 0; i < n; i++) {
+            getPt(i, _b);
+            var tx, tz;
+            if (i === n - 1) {
+              // head tangent from smoothed yaw, never from noisy point deltas
+              tx = fx;
+              tz = fz;
+            } else {
+              var i0 = i > 0 ? i - 1 : 0;
+              var i1 = i + 1;
+              getPt(i0, _a);
+              getPt(i1, _c);
+              tx = _c.x - _a.x;
+              tz = _c.z - _a.z;
+            }
+            var tl = Math.sqrt(tx * tx + tz * tz);
+            if (tl < 1e-4) {
+              // degenerate delta at a reversal: reuse the previous tangent
+              tx = hasPrev ? ptx : fx;
+              tz = hasPrev ? ptz : fz;
+            } else {
+              tx /= tl;
+              tz /= tl;
+            }
+            // continuity guard: never let the strip twist through a flip
+            if (hasPrev && tx * ptx + tz * ptz < 0) {
+              tx = ptx;
+              tz = ptz;
+            }
+            ptx = tx;
+            ptz = tz;
+            hasPrev = true;
+            var sx = tz,
+              sz = -tx; // side vector on the floor
+
+            // width taper at the tail so recycling is invisible
+            var w = half;
+            var fromTail = _b.s - sTail;
+            if (fromTail < 3.0) w *= fromTail / 3.0;
+
+            // newer paper lies on top; the head gets an extra ramp so fresh paper
+            // laid over a just-reversed spot never z-fights with itself
+            var y = 0.012 + (_b.s - sTail) * 0.0008;
+            var headBlend = 1 - (sTotal - _b.s) / 1.5;
+            if (headBlend > 0) y += 0.0035 * headBlend;
+            var u = (_b.s - uBase) / uSpan;
+            writeVert(
+              vi++,
+              _b.x + sx * w,
+              y,
+              _b.z + sz * w,
+              0,
+              1,
+              0,
+              u,
+              0,
+              _b.s - uBase,
+            );
+            writeVert(
+              vi++,
+              _b.x - sx * w,
+              y,
+              _b.z - sz * w,
+              0,
+              1,
+              0,
+              u,
+              1,
+              _b.s - uBase,
+            );
+          }
+
+          // ---- bridge to the live contact point ----
+          var yTop = 0.012 + (sTotal - sTail) * 0.0008 + 0.0035;
+          var uC = (sTotal - uBase) / uSpan;
+          writeVert(
+            vi++,
+            pos.x + sxc * half,
+            yTop,
+            pos.y + szc * half,
+            0,
+            1,
+            0,
+            uC,
+            0,
+            sTotal - uBase,
+          );
+          writeVert(
+            vi++,
+            pos.x - sxc * half,
+            yTop,
+            pos.y - szc * half,
+            0,
+            1,
+            0,
+            uC,
+            1,
+            sTotal - uBase,
+          );
+
+          // ---- peel: unprinted paper coming down the front of the barrel ----
+          // this is the physically correct side — the card rolling down the front
+          // is exactly the card the atlas shows there, so the hand-off is seamless
+          for (var j = 1; j <= CURL_SEG; j++) {
+            var th = (j / CURL_SEG) * CURL_MAX;
+            var rr = ROLL_R + 0.012;
+            var px = pos.x + fx * Math.sin(th) * rr;
+            var pz = pos.y + fz * Math.sin(th) * rr;
+            var py = yTop + rr * (1 - Math.cos(th));
+            // paper-face normal, continuous with the flat trail at th = 0
+            var nx = -fx * Math.sin(th),
+              nyv = Math.cos(th),
+              nz = -fz * Math.sin(th);
+            var sHere = sTotal + th * ROLL_R;
+            var uH = (sHere - uBase) / uSpan;
+            writeVert(
+              vi++,
+              px + sxc * half,
+              py,
+              pz + szc * half,
+              nx,
+              nyv,
+              nz,
+              uH,
+              0,
+              sHere - uBase,
+            );
+            writeVert(
+              vi++,
+              px - sxc * half,
+              py,
+              pz - szc * half,
+              nx,
+              nyv,
+              nz,
+              uH,
+              1,
+              sHere - uBase,
+            );
+          }
+
+          var segs = vi / 2 - 1;
+          ribbonGeo.setDrawRange(0, segs * 6);
+          ribbonGeo.attributes.position.needsUpdate = true;
+          ribbonGeo.attributes.normal.needsUpdate = true;
+          ribbonGeo.attributes.uv.needsUpdate = true;
+          ribbonGeo.attributes.aS.needsUpdate = true;
+
+          uTailS.value = sTail - uBase;
+        }
+
+        // ============================================================
+        // Input — pointer on the floor plane, with idle autopilot
+        // ============================================================
+        var raycaster = new THREE.Raycaster();
+        var ndc = new THREE.Vector2(0, 0);
+        var floorPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        var hit = new THREE.Vector3();
+        var pointerActive = false;
+        var lastPointerT = -1e9;
+        var autoAngle = Math.PI * 0.25;
+
+        function onPointer(e) {
+          if (e.target.closest && e.target.closest("#actions, #records, #memoryViewer")) return;
+          var x = e.clientX,
+            y = e.clientY;
+          if (e.touches && e.touches.length) {
+            x = e.touches[0].clientX;
+            y = e.touches[0].clientY;
+          }
+          if (x === undefined) return;
+          ndc.x = (x / window.innerWidth) * 2 - 1;
+          ndc.y = -(y / window.innerHeight) * 2 + 1;
+          pointerActive = true;
+          lastPointerT = performance.now();
+        }
+        window.addEventListener("pointermove", onPointer, { passive: true });
+        window.addEventListener("pointerdown", onPointer, { passive: true });
+        window.addEventListener("touchmove", onPointer, { passive: true });
+        window.addEventListener("touchstart", onPointer, { passive: true });
+
+        // ---- click toggles the roll; drags don't ----
+        var paused = false;
+        var downX = 0,
+          downY = 0,
+          downT = 0;
+        var hintEl = document.getElementById("hint");
+        var hintTextEl = document.getElementById("hintText");
+
+        function showHint(text, autoHide) {
+          gsap.killTweensOf(hintEl);
+          hintEl.style.display = "flex";
+          hintTextEl.innerHTML = text;
+          gsap.to(hintEl, { opacity: 1, duration: 0.35, ease: "power2.out" });
+          if (autoHide) {
+            gsap.to(hintEl, {
+              opacity: 0,
+              duration: 0.8,
+              delay: autoHide,
+              ease: "power2.in",
+              onComplete: function () {
+                hintEl.style.display = "none";
+              },
+            });
+          }
+        }
+
+        function setPaused(p) {
+          paused = p;
+          if (paused) {
+            showHint("Paused &mdash; click anywhere to resume", 0);
+          } else {
+            showHint("Rolling &mdash; click to pause", 2.6);
+          }
+        }
+
+        window.addEventListener(
+          "pointerdown",
+          function (e) {
+            if (e.target.closest && e.target.closest("#actions, #records, #memoryViewer")) { downT = -Infinity; return; }
+            downX = e.clientX;
+            downY = e.clientY;
+            downT = performance.now();
+          },
+          { passive: true },
+        );
+        window.addEventListener(
+          "pointerup",
+          function (e) {
+            if (e.target.closest && e.target.closest("#actions, #records, #memoryViewer")) return;
+            var dx = e.clientX - downX,
+              dy = e.clientY - downY;
+            if (dx * dx + dy * dy < 64 && performance.now() - downT < 450) {
+              setPaused(!paused);
+            }
+          },
+          { passive: true },
+        );
+
+        function updateTarget(t, dt) {
+          var idle = performance.now() - lastPointerT > 3200;
+          if (pointerActive && !idle) {
+            raycaster.setFromCamera(ndc, camera);
+            if (raycaster.ray.intersectPlane(floorPlane, hit)) {
+              target.set(hit.x, hit.z);
+            }
+          } else {
+            // wandering autopilot — always in motion, never a straight line
+            autoAngle +=
+              dt *
+              (0.34 +
+                0.5 * Math.sin(t * 0.31) +
+                0.3 * Math.sin(t * 0.113 + 2.1));
+            target.set(
+              pos.x + Math.sin(autoAngle) * 5.2,
+              pos.y + Math.cos(autoAngle) * 5.2,
+            );
+          }
+        }
+
+        // ============================================================
+        // Camera
+        // ============================================================
+        var camOffset = new THREE.Vector3(7.6, 8.8, 10.8);
+        var camPos = new THREE.Vector3();
+        var lookAt = new THREE.Vector3(0, 0.6, 0);
+        var _desired = new THREE.Vector3();
+        var intro = { zoom: 1.5 };
+
+        function updateCamera(dt) {
+          _desired.set(pos.x, 0, pos.y).addScaledVector(camOffset, intro.zoom);
+          var k = 1 - Math.exp(-2.6 * dt);
+          camPos.lerp(_desired, k);
+          _desired.set(pos.x, 0.55, pos.y);
+          lookAt.lerp(_desired, k);
+          camera.position.copy(camPos);
+          camera.lookAt(lookAt);
+        }
+
+        // ============================================================
+        // HUD
+        // ============================================================
+        var counterNum = document.getElementById("counterNum");
+        var meterFill = document.getElementById("meterFill");
+        var lastPrinted = -1;
+
+        function pad4(nv) {
+          var s = String(nv);
+          while (s.length < 4) s = "0" + s;
+          return s;
+        }
+        function updateHUD() {
+          var printed = Math.floor(sTotal / CARD_LEN);
+          if (printed !== lastPrinted) {
+            lastPrinted = printed;
+            counterNum.textContent = pad4(printed);
+          }
+          var frac = (sTotal % CARD_LEN) / CARD_LEN;
+          meterFill.style.width = (frac * 100).toFixed(1) + "%";
+        }
+
+        // ============================================================
+        // Pre-roll: lay a trail before the first frame
+        // ============================================================
+        (function preroll() {
+          var t0 = 0;
+          for (var i = 0; i < 560; i++) {
+            t0 += 1 / 60;
+            autoAngle +=
+              (1 / 60) *
+              (0.34 +
+                0.5 * Math.sin(t0 * 0.31) +
+                0.3 * Math.sin(t0 * 0.113 + 2.1));
+            target.set(
+              pos.x + Math.sin(autoAngle) * 5.2,
+              pos.y + Math.cos(autoAngle) * 5.2,
+            );
+            stepMotion(1 / 60);
+          }
+          camPos.set(pos.x, 0, pos.y).addScaledVector(camOffset, intro.zoom);
+          lookAt.set(pos.x, 0.55, pos.y);
+        })();
+
+        // ============================================================
+        // Main loop — fixed order, no allocations
+        // ============================================================
+        var clock = new THREE.Clock();
+        var elapsed = 0;
+
+        function frame() {
+          requestAnimationFrame(frame);
+          var dt = Math.min(clock.getDelta(), 1 / 30);
+          if (document.hidden) return;
+          elapsed += dt;
+
+          if (!paused) {
+            updateTarget(elapsed, dt);
+            stepMotion(dt);
+
+            rollGroup.position.set(pos.x, ROLL_R, pos.y);
+            rollGroup.rotation.y = yaw;
+            spinner.rotation.x = (sTotal % REV) / ROLL_R;
+
+            rebuildRibbon();
+
+            blob.position.set(pos.x, 0.006, pos.y);
+            blob.rotation.z = yaw - Math.PI / 2;
+
+            floor.position.set(pos.x, 0, pos.y);
+            sun.position.set(pos.x + 5, 10, pos.y + 4);
+            sun.target.position.set(pos.x, 0, pos.y);
+          }
+
+          updateCamera(dt);
+          updateHUD();
+
+          renderer.render(scene, camera);
+        }
+
+        window.addEventListener("resize", function () {
+          camera.aspect = window.innerWidth / window.innerHeight;
+          camera.updateProjectionMatrix();
+          renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        installArchiveControls();
+
+        // Intro
+        gsap.to(intro, { zoom: 1, duration: 2.2, ease: "power3.out" });
+        gsap.to(".hud", {
+          opacity: 1,
+          duration: 1.2,
+          stagger: 0.12,
+          delay: 0.5,
+          ease: "power2.out",
+        });
+        gsap.to(hintEl, {
+          opacity: 0,
+          duration: 0.8,
+          delay: 12,
+          ease: "power2.in",
+          onComplete: function () {
+            hintEl.style.display = "none";
+          },
+        });
+
+        frame();
+        document.body.dataset.rollReady = "true";
+      })();
+    </script>
+  </body>
+</html>

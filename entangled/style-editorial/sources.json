@@ -1,0 +1,132 @@
+[
+  {
+    "id": "style-minimal",
+    "pexelsId": 33798228,
+    "sourcePage": "https://www.pexels.com/photo/33798228/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-minimal.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "268335bd0085394bce820cce10b249da1f1eda14bc783110ce4ebd2d97035aa7"
+  },
+  {
+    "id": "style-soft",
+    "pexelsId": 35905248,
+    "sourcePage": "https://www.pexels.com/photo/35905248/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-soft.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "3d69a0c1c9da9b715dc538a9210b71246f58dbff3cc0bac38c9cf218fd835766"
+  },
+  {
+    "id": "style-denim",
+    "pexelsId": 31885410,
+    "sourcePage": "https://www.pexels.com/photo/31885410/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-denim.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "a83cb13da330a1bbdeab0aaf38677513779a5d3285060be8c0dc962d3c541b68"
+  },
+  {
+    "id": "style-film",
+    "pexelsId": 35206886,
+    "sourcePage": "https://www.pexels.com/photo/35206886/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-film.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "f18b8d2635f6c33b77096e5d61f61310b843accaced0db3bf518abbab98016d6"
+  },
+  {
+    "id": "style-romantic",
+    "pexelsId": 40525240,
+    "sourcePage": "https://www.pexels.com/photo/40525240/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-romantic.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "0adc9e81932cd8a40d3c0481e8055410543a3b5232b8cc54daecf8a352f09d30"
+  },
+  {
+    "id": "style-night",
+    "pexelsId": 9463618,
+    "sourcePage": "https://www.pexels.com/photo/9463618/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-night.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "14f2dc0520d7184b29ff77fa0f6119ab0b05285c3849c88c6114512198544204"
+  },
+  {
+    "id": "style-outdoor",
+    "pexelsId": 2028056,
+    "sourcePage": "https://www.pexels.com/photo/2028056/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-outdoor.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "df60609e88898977cb541a81710da96501a4a281757b93e44d2cded109d15ab0"
+  },
+  {
+    "id": "style-sport",
+    "pexelsId": 16122091,
+    "sourcePage": "https://www.pexels.com/photo/16122091/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-sport.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "6cfeccea600562dd201ee428ddf27a68e6d901aaf67d4590c79ccbe2ba4bafe9"
+  },
+  {
+    "id": "style-linen",
+    "pexelsId": 20867424,
+    "sourcePage": "https://www.pexels.com/photo/20867424/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-linen.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "30ba674ead577495d155079ef8631577fd15593384e3fea5a5583e859708c932"
+  },
+  {
+    "id": "style-navy",
+    "pexelsId": 18567265,
+    "sourcePage": "https://www.pexels.com/photo/18567265/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-navy.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "4eef353a2825515483a6c0e1eecea12eacbdd2a6dd9310bde1ca914f142be72e"
+  },
+  {
+    "id": "style-stripes",
+    "pexelsId": 17542202,
+    "sourcePage": "https://www.pexels.com/photo/17542202/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-stripes.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "99ae00275540aa8680b0daa27165c95b0a4353cbaded0c3eaadc5a8fcee5cffa"
+  },
+  {
+    "id": "style-satin",
+    "pexelsId": 28609631,
+    "sourcePage": "https://www.pexels.com/photo/28609631/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-satin.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "e9f9aea3cc7e26becda9e4bb6e3149a63eefdc6352ba050a307b780b3e537a7a"
+  },
+  {
+    "id": "style-color",
+    "pexelsId": 35725091,
+    "sourcePage": "https://www.pexels.com/photo/35725091/",
+    "image": "/entangled-shelter-pages/entangled/style-editorial/style-color.webp",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "adaptation": "Converted to WebP; responsive crop and editorial CSS treatment.",
+    "sha256": "229d75761cfa3a5ad2f5f3d6e28ff3ff325be1516f90a883c05f66b72239e5b0"
+  }
+]

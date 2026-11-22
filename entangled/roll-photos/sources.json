@@ -1,0 +1,98 @@
+[
+  {
+    "id": "breakfast",
+    "title": "Croissant and Coffee on Table",
+    "author": "Merve Nur Türker",
+    "sourcePage": "https://www.pexels.com/photo/croissant-and-coffee-on-table-20164169/",
+    "sourceImage": "https://images.pexels.com/photos/20164169/pexels-photo-20164169.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/breakfast.webp",
+    "sha256": "7915292125db21a5becebeb5b2b015fcf8691dfbf93424bb2c27749eaaecafa0",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "boutique",
+    "title": "Clothes Racks in a Boutique",
+    "author": "Arina Krasnikova",
+    "sourcePage": "https://www.pexels.com/photo/clothes-racks-in-a-boutique-5424922/",
+    "sourceImage": "https://images.pexels.com/photos/5424922/pexels-photo-5424922.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/boutique.webp",
+    "sha256": "5dda6008c212317b3f27953c5783900a6f551dfe48c60c1b55f853ffde08bc89",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "alps",
+    "title": "Swiss Alps with Lake and Mountains",
+    "author": "Jean-Paul Wettstein",
+    "sourcePage": "https://www.pexels.com/photo/stunning-swiss-alps-landscape-with-lake-and-mountains-35309605/",
+    "sourceImage": "https://images.pexels.com/photos/35309605/pexels-photo-35309605.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/alps.webp",
+    "sha256": "a297538c52e23f6892658268263940d22cea385cc06dbfeb641244d11d74f933",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "coast",
+    "title": "View of a Town by a Sea",
+    "author": "Andrea Musto",
+    "sourcePage": "https://www.pexels.com/photo/view-of-a-town-by-a-sea-14162577/",
+    "sourceImage": "https://images.pexels.com/photos/14162577/pexels-photo-14162577.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/coast.webp",
+    "sha256": "151b0e66b2c99f52a37491017942b94c74d641578330f8f1eaa318e83053545a",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "pasta",
+    "title": "Uncooked pasta on black surface",
+    "author": "Klaus Nielsen",
+    "sourcePage": "https://www.pexels.com/photo/uncooked-pasta-on-black-surface-6287361/",
+    "sourceImage": "https://images.pexels.com/photos/6287361/pexels-photo-6287361.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/pasta.webp",
+    "sha256": "f35e227416f6d27c502293b8e3919839ab30c6f71737dbfe45cc2f3c8579713b",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "shoes",
+    "title": "Person Wearing Leather Shoes",
+    "author": "lil artsy",
+    "sourcePage": "https://www.pexels.com/photo/person-wearing-leather-shoes-1925532/",
+    "sourceImage": "https://images.pexels.com/photos/1925532/pexels-photo-1925532.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/shoes.webp",
+    "sha256": "85203fbe4f4e9a37529124104ed8acb2aed562ce28fa4bf44ac23114cc8855f3",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "station",
+    "title": "Platform on Train Station",
+    "author": "Satoshi Hirayama",
+    "sourcePage": "https://www.pexels.com/photo/platform-on-train-station-16096356/",
+    "sourceImage": "https://images.pexels.com/photos/16096356/pexels-photo-16096356.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/station.webp",
+    "sha256": "3524f947f4be0624458832dc27dc44831b9013704ee29391bb5e739e04649158",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  },
+  {
+    "id": "coffee",
+    "title": "Flat Lay of Coffee and Croissant on Wooden Table",
+    "author": "Esra Afşar",
+    "sourcePage": "https://www.pexels.com/photo/flat-lay-of-coffee-and-croissant-on-wooden-table-33456188/",
+    "sourceImage": "https://images.pexels.com/photos/33456188/pexels-photo-33456188.jpeg?auto=compress&cs=tinysrgb&w=1200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/roll-photos/coffee.webp",
+    "sha256": "9a3893ffd786767ca9d273a4957e0dc1a4989365c32f34d304b84110b639bf1a",
+    "adaptation": "Resized, converted to WebP and cropped on the paper roll."
+  }
+]

@@ -1,0 +1,62 @@
+[
+  {
+    "id": "castle",
+    "title": "Old Stone Castle on Hill Reflection in Water",
+    "author": "Lewis Ashton",
+    "sourcePage": "https://www.pexels.com/photo/old-stone-castle-on-hill-reflection-in-water-10754932/",
+    "sourceImage": "https://images.pexels.com/photos/10754932/pexels-photo-10754932.jpeg?auto=compress&cs=tinysrgb&w=2200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/salon/castle.webp",
+    "sha256": "2611ef53a0203d00d4d05ef03709f9eb0d9ce37d9b41aa0543271a2ad7ef11f4",
+    "adaptation": "Resized and converted to WebP; CSS colour grade and responsive crop."
+  },
+  {
+    "id": "lake-castle",
+    "title": "Medieval Castle Reflection on Calm Lake",
+    "author": "Marko Blažon",
+    "sourcePage": "https://www.pexels.com/photo/medieval-castle-reflection-on-calm-lake-36806252/",
+    "sourceImage": "https://images.pexels.com/photos/36806252/pexels-photo-36806252.jpeg?auto=compress&cs=tinysrgb&w=2200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/salon/lake-castle.webp",
+    "sha256": "b44d1e2678814b041e9226eafb465eb0fab88f897d73f000403649a25a50880d",
+    "adaptation": "Resized and converted to WebP; CSS colour grade and responsive crop."
+  },
+  {
+    "id": "salon",
+    "title": "Elegant Baroque Palace Interior with Chandeliers",
+    "author": "Magda Ehlers",
+    "sourcePage": "https://www.pexels.com/photo/elegant-baroque-palace-interior-with-chandeliers-29982282/",
+    "sourceImage": "https://images.pexels.com/photos/29982282/pexels-photo-29982282.jpeg?auto=compress&cs=tinysrgb&w=2200",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/salon/salon.webp",
+    "sha256": "eb4ed11c3f8832a20a86194f0ec8696ab3556494f2db4af62346bb0b0ced503c",
+    "adaptation": "Resized and converted to WebP; CSS colour grade and responsive crop."
+  },
+  {
+    "id": "boutique",
+    "title": "Modern Fashion Boutique with Stylish Clothing",
+    "author": "BI ravencrow",
+    "sourcePage": "https://www.pexels.com/photo/modern-fashion-boutique-with-stylish-clothing-33327425/",
+    "sourceImage": "https://images.pexels.com/photos/33327425/pexels-photo-33327425.png",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/salon/boutique.webp",
+    "sha256": "14581d8a77f2f31f2dee31290e5972f9369bc9d6f849487622832688339e3804",
+    "adaptation": "Resized and converted to WebP; CSS colour grade and responsive crop."
+  },
+  {
+    "id": "sculpture-duet",
+    "title": "Classic Roman Busts in Dramatic Lighting",
+    "author": "Rahime Gül",
+    "sourcePage": "https://www.pexels.com/photo/classic-roman-busts-in-dramatic-lighting-29057038/",
+    "sourceImage": "https://images.pexels.com/photos/29057038/pexels-photo-29057038.jpeg",
+    "license": "Pexels License",
+    "licenseUrl": "https://www.pexels.com/license/",
+    "image": "/entangled-shelter-pages/entangled/salon/sculpture-duet.webp",
+    "sha256": "327a74d1e2504b22c9503b1157217e1b316cf1ec5d060a2deb26710206f1449e",
+    "adaptation": "Converted to WebP; responsive crop and CSS colour grade."
+  }
+]

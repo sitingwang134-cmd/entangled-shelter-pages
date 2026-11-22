@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="340" viewBox="0 0 240 340" fill="none">
+ <defs>
+  <linearGradient id="gold" x2="1" y2="1"><stop stop-color="#fff0b5"/><stop offset=".35" stop-color="#b58739"/><stop offset=".55" stop-color="#f8df93"/><stop offset="1" stop-color="#b18a48"/></linearGradient>
+  <pattern id="damask" width="30" height="40" patternUnits="userSpaceOnUse"><path d="M15 3C4 13 4 21 15 29C26 21 26 13 15 3ZM15 10V24M9 17H21" stroke="#e1bd70" stroke-width=".6" opacity=".22"/><circle cx="0" cy="37" r="1" fill="#e1bd70"/></pattern>
+  <g id="scroll" stroke="url(#gold)" stroke-width="1.5">
+   <path d="M26 73C4 53 12 25 36 24C58 23 65 43 52 50C37 57 27 37 40 33C48 30 51 40 44 42M26 65C18 48 31 48 35 58C42 75 22 92 18 115M31 23C42 12 58 17 64 30M22 37C10 31 17 16 28 18"/>
+   <path d="M19 85C38 69 47 85 36 91C28 95 21 89 19 85ZM24 103C42 89 44 108 32 111ZM52 25C60 9 74 16 67 27C64 32 56 30 52 25" fill="#c6a15a" fill-opacity=".6"/>
+   <path d="M18 119L24 128L18 137L12 128Z" fill="#edcf83"/>
+  </g>
+  <g id="crest" stroke="url(#gold)" stroke-width="1.5">
+   <path d="M83 77Q120 52 157 77L151 94H89Z" fill="#a9823e" fill-opacity=".35"/>
+   <path d="M90 82L84 61L104 73L120 50L136 73L156 61L150 82ZM92 89H148"/>
+   <circle cx="84" cy="59" r="3" fill="#f4d58c"/><circle cx="120" cy="47" r="3" fill="#f4d58c"/><circle cx="156" cy="59" r="3" fill="#f4d58c"/>
+   <path d="M116 80L120 73L124 80L120 86Z" fill="#e6cc83"/>
+   <path d="M79 86C54 65 58 109 80 106M161 86C186 65 182 109 160 106M68 103Q42 100 57 117M172 103Q198 100 183 117"/>
+  </g>
+ </defs>
+ <rect x="7" y="7" width="226" height="326" rx="7" stroke="url(#gold)" stroke-width="3"/>
+ <rect x="13" y="13" width="214" height="314" rx="4" stroke="#d4ad64" stroke-width=".8"/>
+ <rect x="18" y="18" width="204" height="304" rx="3" fill="url(#damask)"/>
+ <path d="M58 19H104L120 27L136 19H182M58 321H104L120 313L136 321H182" stroke="url(#gold)" stroke-width="2"/>
+ <use href="#scroll"/><use href="#scroll" transform="translate(240 0) scale(-1 1)"/><use href="#scroll" transform="translate(0 340) scale(1 -1)"/><use href="#scroll" transform="translate(240 340) scale(-1)"/>
+ <use href="#crest"/><use href="#crest" transform="translate(240 340) rotate(180)"/>
+ <ellipse cx="120" cy="170" rx="60" ry="71" stroke="url(#gold)" stroke-width="2"/>
+ <ellipse cx="120" cy="170" rx="54" ry="65" stroke="#d8b269" stroke-width=".75"/>
+ <path d="M53 138Q32 170 53 202M187 138Q208 170 187 202M47 148L40 153L46 160L37 169L46 179L40 187L47 194M193 148L200 153L194 160L203 169L194 179L200 187L193 194" stroke="url(#gold)" stroke-width="1.5"/>
+ <path d="M116 30L120 24L124 30L120 36ZM116 310L120 304L124 310L120 316Z" fill="#e7ca83"/>
+</svg>
