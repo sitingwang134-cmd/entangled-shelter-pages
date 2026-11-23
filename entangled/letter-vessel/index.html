@@ -91,7 +91,7 @@ envelopePhoto.onload=()=>{
 };
 envelopePhoto.src='envelope-photo.webp';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const size=540,center=270,radius=220;
+const size=700,center=size/2,radius=220;
 const ideas = {
  Taste: [
   'Miso ramen','Mushroom risotto','Street tacos','Tomato pasta','Steamed dumplings','Spiced lentils',
@@ -128,7 +128,7 @@ const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
-const floatingCount=24;
+const floatingCount=40;
 const pileCache=document.createElement('canvas');
 const pilePaint=pileCache.getContext('2d');
 let pileCacheDirty=true;
@@ -191,22 +191,36 @@ function refill(){
  letters = shuffled.map(({theme, idea}, i) => {
   const angle = rand(0, Math.PI * 2), distance = Math.sqrt(Math.random()) * 195;
   return {x:center + Math.cos(angle)*distance, y:center + Math.sin(angle)*distance, a:rand(-Math.PI,Math.PI),
-   vx:0, vy:0, va:0, paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
+   vx:0, vy:0, va:0, driftX:0, driftY:0, driftAngle:0, paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
  });
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
 function pose(p,index){
  if(reduced || gesture || index<letters.length-floatingCount)return p;
- const dx=p.x-hover.x,dy=p.y-hover.y;
- const distance=Math.hypot(dx,dy);
- const push=hover.strength*Math.max(0,1-distance/135);
- const divisor=Math.max(24,distance);
- return {
-  x:p.x+dx/divisor*push*27,
-  y:p.y+dy/divisor*push*20-push*12,
-  a:p.a+dx/divisor*push*.18,
- };
+ return {x:p.x+p.driftX,y:p.y+p.driftY,a:p.a+p.driftAngle};
 }
+function driftLetters(elapsed){
+ const start=Math.max(0,letters.length-floatingCount);
+ let moving=false;
+ for(let i=start;i<letters.length;i++){
+  const p=letters[i];
+  const dx=p.x-hover.x,dy=p.y-hover.y;
+  const distance=Math.hypot(dx,dy);
+  const influence=hover.strength*Math.max(0,1-distance/235);
+  const angle=distance<15?p.a:Math.atan2(dy,dx);
+  const x=Math.cos(angle)*influence*94;
+  const y=Math.sin(angle)*influence*76-influence*12;
+  const rotation=Math.cos(angle)*influence*.4;
+  const ease=1-Math.exp(-elapsed/(influence>.05?95:340));
+  p.driftX+=(x-p.driftX)*ease;
+  p.driftY+=(y-p.driftY)*ease;
+  p.driftAngle+=(rotation-p.driftAngle)*ease;
+  if(Math.abs(p.driftX)+Math.abs(p.driftY)>.12||Math.abs(p.driftAngle)>.002)moving=true;
+  else if(influence===0)p.driftX=p.driftY=p.driftAngle=0;
+ }
+ return moving;
+}
+
 function envelope(p,lifted=false,position=p,paint=ctx){
  paint.save();paint.translate(position.x,position.y);paint.rotate(position.a);
  if(lifted)paint.scale(1.12,1.12);
@@ -305,7 +319,7 @@ function openLetter(){
  putBack.hidden=true;next.hidden=false;status.textContent='The seal is open.';
  examiner.querySelector('.view-hint').textContent='';
 }
-putBack.onclick=()=>{if(!selected)return;selected.x=rand(188,352);selected.y=rand(188,352);letters.push(selected);selected=null;draw.disabled=false;result.hidden=true;examiner.hidden=true;status.textContent='Back in the pile.';render();draw.focus()};
+putBack.onclick=()=>{if(!selected)return;selected.x=rand(center-82,center+82);selected.y=rand(center-82,center+82);letters.push(selected);selected=null;draw.disabled=false;result.hidden=true;examiner.hidden=true;status.textContent='Back in the pile.';render();draw.focus()};
 next.onclick=()=>{
  selected=null;
  if(!letters.length)refill();
@@ -331,6 +345,7 @@ if(!reduced){
   if(frame||gesture){
    hoverTarget=null;
    hover.strength=0;
+   for(const letter of letters)letter.driftX=letter.driftY=letter.driftAngle=0;
    lastHoverFrame=0;
    return;
   }
@@ -342,8 +357,9 @@ if(!reduced){
   }
   const ease=1-Math.exp(-elapsed/(hoverTarget?65:160));
   hover.strength+=((hoverTarget?1:0)-hover.strength)*ease;
-  const settled=!hoverTarget&&hover.strength<.005;
-  if(settled)hover.strength=0;
+  if(!hoverTarget&&hover.strength<.005)hover.strength=0;
+  const moving=driftLetters(elapsed);
+  const settled=!hoverTarget&&!hover.strength&&!moving;
   render(true);
   if(settled)lastHoverFrame=0;
   else hoverFrame=requestAnimationFrame(animateHover);
