@@ -28,7 +28,7 @@ canvas:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
 @media(prefers-reduced-motion:no-preference){
- .examiner[data-open=false][data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
+ .examiner[data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
 }
 @keyframes letterHover{0%,100%{translate:0 -3px}50%{translate:0 -16px}}
 .face,.paper-edge{position:absolute;display:block}
@@ -79,10 +79,10 @@ const envelopePhoto=new Image();
 envelopePhoto.onload=()=>{
  for(let i=0;i<palette.length;i++){
   const texture=document.createElement('canvas');
-  texture.width=envelopePhoto.naturalWidth;texture.height=envelopePhoto.naturalHeight;
+  texture.width=182;texture.height=Math.round(182*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth);
   const paint=texture.getContext('2d');
   paint.filter=`brightness(${.83+i*.055})`;
-  paint.drawImage(envelopePhoto,0,0);
+  paint.drawImage(envelopePhoto,0,0,texture.width,texture.height);
   paperTextures.push(texture);
  }
  render();
@@ -118,6 +118,10 @@ const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
+const floatingCount=16;
+const pileCache=document.createElement('canvas');
+const pilePaint=pileCache.getContext('2d');
+let pileCacheDirty=true;
 let floatTime=0, lastFloatFrame=0, idleFrame=0;
 const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
 let turn=-12, tilt=8, rotation=null, opened=false;
@@ -137,14 +141,15 @@ examiner.addEventListener('pointerdown',e=>{
  examiner.dataset.dragging='true';examiner.setPointerCapture(e.pointerId);
 });
 examiner.addEventListener('pointermove',e=>{
- if(opened)return;
  const b=examiner.getBoundingClientRect(),x=clamp((e.clientX-b.left)/b.width,0,1),y=clamp((e.clientY-b.top)/b.height,0,1);
  model.style.setProperty('--lx',`${x*100}%`);model.style.setProperty('--ly',`${y*100}%`);
  if(rotation?.id===e.pointerId){
   turn=rotation.yaw+(e.clientX-rotation.x)*1.45;
   tilt=clamp(rotation.pitch-(e.clientY-rotation.y)*.36,-28,28);
   orient();
- }else if(!reduced&&e.pointerType==='mouse')orient(turn+(x-.5)*23,tilt-(y-.5)*17);
+ }else if(!reduced&&e.pointerType==='mouse'){
+  orient((opened?0:turn)+(x-.5)*(opened?12:23),(opened?0:tilt)-(y-.5)*(opened?9:17));
+ }
 });
 for(const event of ['pointerup','pointercancel','lostpointercapture'])examiner.addEventListener(event,e=>{
  if(rotation?.id!==e.pointerId)return;
@@ -152,7 +157,7 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])examiner.a
  rotation=null;examiner.dataset.dragging='false';
  if(wasClick)openLetter();
 });
-examiner.addEventListener('pointerleave',()=>{if(!rotation)orient()});
+examiner.addEventListener('pointerleave',()=>{if(!rotation){if(opened)orient(0,0);else orient()}});
 examiner.addEventListener('keydown',e=>{
  if(e.key==='Enter'||e.key===' '){e.preventDefault();openLetter();return}
  if(opened)return;
@@ -175,30 +180,43 @@ function refill(){
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='72 sealed letters across Taste, Style and Wander.';render();
 }
 function pose(p,index){
- if(reduced || gesture || index<letters.length-16)return p;
+ if(reduced || gesture || index<letters.length-floatingCount)return p;
  const phase=floatTime+p.phase;
  return {x:p.x+Math.sin(phase*.8)*6,y:p.y-9+Math.cos(phase)*8,a:p.a+Math.sin(phase*.9)*.085};
 }
-function envelope(p,lifted=false,position=p){
- ctx.save();ctx.translate(position.x,position.y);ctx.rotate(position.a);
- if(lifted)ctx.scale(1.12,1.12);
- ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:0;ctx.shadowOffsetY=lifted?10:0;
+function envelope(p,lifted=false,position=p,paint=ctx){
+ paint.save();paint.translate(position.x,position.y);paint.rotate(position.a);
+ if(lifted)paint.scale(1.12,1.12);
+ paint.shadowColor='#040806a0';paint.shadowBlur=lifted?18:0;paint.shadowOffsetY=lifted?10:0;
  if(envelopePhoto.naturalWidth){
   const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
   const texture=paperTextures[palette.indexOf(p.paper)];
-  ctx.drawImage(!lifted&&texture?texture:envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
-  ctx.restore();
+  paint.drawImage(!lifted&&texture?texture:envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  paint.restore();
   return;
  }
- ctx.fillStyle=p.paper;ctx.fillRect(-44,-29,88,58);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
- ctx.strokeStyle='#8b6d46';ctx.lineWidth=1;ctx.strokeRect(-44,-29,88,58);
- ctx.beginPath();ctx.moveTo(-43,-28);ctx.lineTo(0,6);ctx.lineTo(43,-28);ctx.fillStyle='#f4e1b42c';ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(-43,28);ctx.lineTo(-16,1);ctx.moveTo(43,28);ctx.lineTo(16,1);ctx.stroke();
- ctx.beginPath();ctx.arc(0,7,7,0,Math.PI*2);ctx.fillStyle='#702f32';ctx.fill();ctx.strokeStyle='#ac6260';ctx.stroke();ctx.restore();
+ paint.fillStyle=p.paper;paint.fillRect(-44,-29,88,58);paint.shadowBlur=0;paint.shadowOffsetY=0;
+ paint.strokeStyle='#8b6d46';paint.lineWidth=1;paint.strokeRect(-44,-29,88,58);
+ paint.beginPath();paint.moveTo(-43,-28);paint.lineTo(0,6);paint.lineTo(43,-28);paint.fillStyle='#f4e1b42c';paint.fill();paint.stroke();
+ paint.beginPath();paint.moveTo(-43,28);paint.lineTo(-16,1);paint.moveTo(43,28);paint.lineTo(16,1);paint.stroke();
+ paint.beginPath();paint.arc(0,7,7,0,Math.PI*2);paint.fillStyle='#702f32';paint.fill();paint.strokeStyle='#ac6260';paint.stroke();paint.restore();
 }
-function render(){
+function render(ambient=false){
  ctx.clearRect(0,0,size,size);
- letters.forEach((p,index)=>{if(p!==gesture?.letter)envelope(p,false,pose(p,index))});
+ let start=0;
+ if(ambient){
+  start=Math.max(0,letters.length-floatingCount);
+  if(pileCacheDirty){
+   pilePaint.clearRect(0,0,size,size);
+   for(let i=0;i<start;i++)envelope(letters[i],false,letters[i],pilePaint);
+   pileCacheDirty=false;
+  }
+  ctx.drawImage(pileCache,0,0,size,size);
+ }else pileCacheDirty=true;
+ for(let i=start;i<letters.length;i++){
+  const letter=letters[i];
+  if(letter!==gesture?.letter)envelope(letter,false,pose(letter,i));
+ }
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -269,18 +287,29 @@ next.onclick=()=>{
 };
 reset.onclick=()=>{refill();draw.focus()};
 canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();draw.click()}if(event.key===' '){event.preventDefault();stir.click()}});
-function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*scale;canvas.height=size*scale;ctx.setTransform(scale,0,0,scale,0,0);render()}
+function resize(){
+ const pixels=Math.round(size*Math.min(devicePixelRatio||1,1.5));
+ canvas.width=canvas.height=pileCache.width=pileCache.height=pixels;
+ const scale=pixels/size;
+ ctx.setTransform(scale,0,0,scale,0,0);
+ pilePaint.setTransform(scale,0,0,scale,0,0);
+ render();
+}
 resize();refill();
 window.addEventListener('resize',resize);
 if(!reduced){
  const floatLetters=(now)=>{
-  if(!frame&&!gesture&&now-lastFloatFrame>=48){
-   lastFloatFrame=now;floatTime=now/800;render();
+  const elapsed=lastFloatFrame?Math.min(now-lastFloatFrame,40):16;
+  lastFloatFrame=now;
+  if(!frame&&!gesture){
+   floatTime+=elapsed/800;
+   render(true);
   }
   idleFrame=requestAnimationFrame(floatLetters);
  };
  new IntersectionObserver(([entry])=>{
   cancelAnimationFrame(idleFrame);
+  lastFloatFrame=0;
   if(entry.isIntersecting)idleFrame=requestAnimationFrame(floatLetters);
  }).observe(canvas);
 }
