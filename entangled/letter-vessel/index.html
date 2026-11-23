@@ -129,6 +129,8 @@ const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
 let floatTime=0, lastFloatFrame=0, idleFrame=0;
+const hover={x:0,y:0,strength:0};
+let hoverTarget=null;
 const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
 let turn=-12, tilt=8, rotation=null, opened=false;
 const note=document.querySelector('#letter-note');
@@ -154,7 +156,7 @@ examiner.addEventListener('pointermove',e=>{
   turn=rotation.yaw+(e.clientX-rotation.x)*1.45;
   tilt=clamp(rotation.pitch-(e.clientY-rotation.y)*.36,-28,28);
   orient();
- }else if(!reduced&&e.pointerType==='mouse')orient(turn+(x-.5)*23,tilt-(y-.5)*17);
+ }else if(!reduced&&e.pointerType==='mouse')orient(turn+(x-.5)*46,tilt-(y-.5)*32);
 });
 for(const event of ['pointerup','pointercancel','lostpointercapture'])examiner.addEventListener(event,e=>{
  if(rotation?.id!==e.pointerId)return;
@@ -162,7 +164,12 @@ for(const event of ['pointerup','pointercancel','lostpointercapture'])examiner.a
  rotation=null;examiner.dataset.dragging='false';
  if(wasClick)openLetter();
 });
-examiner.addEventListener('pointerleave',()=>{if(!rotation)orient()});
+examiner.addEventListener('pointerleave',()=>{
+ if(rotation)return;
+ orient();
+ model.style.removeProperty('--lx');
+ model.style.removeProperty('--ly');
+});
 examiner.addEventListener('keydown',e=>{
  if(e.key==='Enter'||e.key===' '){e.preventDefault();openLetter();return}
  if(opened)return;
@@ -185,9 +192,17 @@ function refill(){
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
 function pose(p,index){
- if(reduced || gesture || index<letters.length-16)return p;
+ if(reduced || gesture || index<letters.length-24)return p;
  const phase=floatTime+p.phase;
- return {x:p.x+Math.sin(phase*.8)*6,y:p.y-9+Math.cos(phase)*8,a:p.a+Math.sin(phase*.9)*.085};
+ const dx=p.x-hover.x,dy=p.y-hover.y;
+ const distance=Math.hypot(dx,dy);
+ const push=hover.strength*Math.max(0,1-distance/135);
+ const divisor=Math.max(24,distance);
+ return {
+  x:p.x+Math.sin(phase*.8)*6+dx/divisor*push*27,
+  y:p.y-9+Math.cos(phase)*8+dy/divisor*push*20-push*12,
+  a:p.a+Math.sin(phase*.9)*.085+dx/divisor*push*.18,
+ };
 }
 function envelope(p,lifted=false,position=p){
  ctx.save();ctx.translate(position.x,position.y);ctx.rotate(position.a);
@@ -284,9 +299,20 @@ function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*
 resize();refill();
 window.addEventListener('resize',resize);
 if(!reduced){
+ canvas.addEventListener('pointermove',event=>{
+  if(event.pointerType==='mouse' && !gesture)hoverTarget=point(event);
+ });
+ canvas.addEventListener('pointerleave',()=>{hoverTarget=null});
  const floatLetters=(now)=>{
-  if(!frame&&!gesture&&now-lastFloatFrame>=48){
-   lastFloatFrame=now;floatTime=now/800;render();
+  if(!frame&&!gesture&&now-lastFloatFrame>=32){
+   lastFloatFrame=now;floatTime=now/800;
+   if(hoverTarget){
+    if(hover.strength<.02){hover.x=hoverTarget.x;hover.y=hoverTarget.y}
+    hover.x+=(hoverTarget.x-hover.x)*.48;
+    hover.y+=(hoverTarget.y-hover.y)*.48;
+   }
+   hover.strength+=((hoverTarget?1:0)-hover.strength)*.25;
+   render();
   }
   idleFrame=requestAnimationFrame(floatLetters);
  };
