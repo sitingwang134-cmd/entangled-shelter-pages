@@ -128,10 +128,6 @@ const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
-const floatingCount=40;
-const pileCache=document.createElement('canvas');
-const pilePaint=pileCache.getContext('2d');
-let pileCacheDirty=true;
 let lastHoverFrame=0, hoverFrame=0;
 const hover={x:0,y:0,strength:0};
 let hoverTarget=null;
@@ -195,18 +191,18 @@ function refill(){
  });
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
-function pose(p,index){
- if(reduced || gesture || index<letters.length-floatingCount)return p;
+function pose(p){
+ if(reduced || gesture)return p;
  return {x:p.x+p.driftX,y:p.y+p.driftY,a:p.a+p.driftAngle};
 }
 function driftLetters(elapsed){
- const start=Math.max(0,letters.length-floatingCount);
  let moving=false;
- for(let i=start;i<letters.length;i++){
+ for(let i=0;i<letters.length;i++){
   const p=letters[i];
   const dx=p.x-hover.x,dy=p.y-hover.y;
   const distance=Math.hypot(dx,dy);
-  const influence=hover.strength*Math.max(0,1-distance/235);
+  const depth=.55+.45*i/Math.max(1,letters.length-1);
+  const influence=hover.strength*Math.max(0,1-distance/270)*depth;
   const angle=distance<15?p.a:Math.atan2(dy,dx);
   const x=Math.cos(angle)*influence*94;
   const y=Math.sin(angle)*influence*76-influence*12;
@@ -221,15 +217,22 @@ function driftLetters(elapsed){
  return moving;
 }
 
-function envelope(p,lifted=false,position=p,paint=ctx){
+function envelope(p,lifted=false,position=p){
+ const texture=paperTextures[palette.indexOf(p.paper)];
+ if(texture&&!lifted){
+  const ratio=canvas.width/size;
+  const x=Math.cos(position.a)*ratio,y=Math.sin(position.a)*ratio;
+  ctx.setTransform(x,y,-y,x,position.x*ratio,position.y*ratio);
+  ctx.drawImage(texture,-texture.width/2,1-texture.height/2);
+  return;
+ }
+ const paint=ctx;
  paint.save();paint.translate(position.x,position.y);paint.rotate(position.a);
  if(lifted)paint.scale(1.12,1.12);
  paint.shadowColor='#040806a0';paint.shadowBlur=lifted?18:0;paint.shadowOffsetY=lifted?10:0;
  if(envelopePhoto.naturalWidth){
   const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
-  const texture=paperTextures[palette.indexOf(p.paper)];
-  if(texture&&!lifted)paint.drawImage(texture,-texture.width/2,1-texture.height/2);
-  else paint.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  paint.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
   paint.restore();
   return;
  }
@@ -239,24 +242,14 @@ function envelope(p,lifted=false,position=p,paint=ctx){
  paint.beginPath();paint.moveTo(-43,28);paint.lineTo(-16,1);paint.moveTo(43,28);paint.lineTo(16,1);paint.stroke();
  paint.beginPath();paint.arc(0,7,7,0,Math.PI*2);paint.fillStyle='#702f32';paint.fill();paint.strokeStyle='#ac6260';paint.stroke();paint.restore();
 }
-function render(ambient=false){
+function render(){
+ const ratio=canvas.width/size;
+ ctx.setTransform(ratio,0,0,ratio,0,0);
  ctx.clearRect(0,0,size,size);
- let start=0;
- if(ambient){
-  start=Math.max(0,letters.length-floatingCount);
-  if(pileCacheDirty){
-   pilePaint.clearRect(0,0,size,size);
-   for(let i=0;i<start;i++)envelope(letters[i],false,letters[i],pilePaint);
-   pileCacheDirty=false;
-  }
-  ctx.drawImage(pileCache,0,0,size,size);
- }else{
-  pileCacheDirty=true;
+ for(const letter of letters){
+  if(letter!==gesture?.letter)envelope(letter,false,pose(letter));
  }
- for(let i=start;i<letters.length;i++){
-  const letter=letters[i];
-  if(letter!==gesture?.letter)envelope(letter,false,pose(letter,i));
- }
+ ctx.setTransform(ratio,0,0,ratio,0,0);
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -279,7 +272,7 @@ function mix(x,y,dx,dy){for(const p of letters){const d=Math.hypot(p.x-x,p.y-y);
 function point(event){const b=canvas.getBoundingClientRect();return {x:(event.clientX-b.left)/b.width*size,y:(event.clientY-b.top)/b.height*size}}
 function topLetter(q){
  for(let index=letters.length-1;index>=0;index--){
-  const {x,y,a}=pose(letters[index],index);
+  const {x,y,a}=pose(letters[index]);
   const dx=q.x-x,dy=q.y-y;
   if(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))<44&&Math.abs(-dx*Math.sin(a)+dy*Math.cos(a))<29)return letters[index];
  }
@@ -329,10 +322,9 @@ reset.onclick=()=>{refill();draw.focus()};
 canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();draw.click()}if(event.key===' '){event.preventDefault();stir.click()}});
 function resize(){
  const pixels=Math.round(size*Math.min(devicePixelRatio||1,1.5));
- canvas.width=canvas.height=pileCache.width=pileCache.height=pixels;
+ canvas.width=canvas.height=pixels;
  const scale=pixels/size;
  ctx.setTransform(scale,0,0,scale,0,0);
- pilePaint.setTransform(scale,0,0,scale,0,0);
  render();
 }
 resize();refill();
@@ -360,7 +352,7 @@ if(!reduced){
   if(!hoverTarget&&hover.strength<.005)hover.strength=0;
   const moving=driftLetters(elapsed);
   const settled=!hoverTarget&&!hover.strength&&!moving;
-  render(true);
+  render();
   if(settled)lastHoverFrame=0;
   else hoverFrame=requestAnimationFrame(animateHover);
  };
