@@ -128,6 +128,10 @@ const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
+const floatingCount=24;
+const pileCache=document.createElement('canvas');
+const pilePaint=pileCache.getContext('2d');
+let pileCacheDirty=true;
 let floatTime=0, lastFloatFrame=0, idleFrame=0;
 const hover={x:0,y:0,strength:0};
 let hoverTarget=null;
@@ -192,7 +196,7 @@ function refill(){
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
 function pose(p,index){
- if(reduced || gesture || index<letters.length-24)return p;
+ if(reduced || gesture || index<letters.length-floatingCount)return p;
  const phase=floatTime+p.phase;
  const dx=p.x-hover.x,dy=p.y-hover.y;
  const distance=Math.hypot(dx,dy);
@@ -204,27 +208,42 @@ function pose(p,index){
   a:p.a+Math.sin(phase*.9)*.085+dx/divisor*push*.18,
  };
 }
-function envelope(p,lifted=false,position=p){
- ctx.save();ctx.translate(position.x,position.y);ctx.rotate(position.a);
- if(lifted)ctx.scale(1.12,1.12);
- ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:0;ctx.shadowOffsetY=lifted?10:0;
+function envelope(p,lifted=false,position=p,paint=ctx){
+ paint.save();paint.translate(position.x,position.y);paint.rotate(position.a);
+ if(lifted)paint.scale(1.12,1.12);
+ paint.shadowColor='#040806a0';paint.shadowBlur=lifted?18:0;paint.shadowOffsetY=lifted?10:0;
  if(envelopePhoto.naturalWidth){
   const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
   const texture=paperTextures[palette.indexOf(p.paper)];
-  if(texture&&!lifted)ctx.drawImage(texture,-texture.width/2,1-texture.height/2);
-  else ctx.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
-  ctx.restore();
+  if(texture&&!lifted)paint.drawImage(texture,-texture.width/2,1-texture.height/2);
+  else paint.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  paint.restore();
   return;
  }
- ctx.fillStyle=p.paper;ctx.fillRect(-44,-29,88,58);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
- ctx.strokeStyle='#8b6d46';ctx.lineWidth=1;ctx.strokeRect(-44,-29,88,58);
- ctx.beginPath();ctx.moveTo(-43,-28);ctx.lineTo(0,6);ctx.lineTo(43,-28);ctx.fillStyle='#f4e1b42c';ctx.fill();ctx.stroke();
- ctx.beginPath();ctx.moveTo(-43,28);ctx.lineTo(-16,1);ctx.moveTo(43,28);ctx.lineTo(16,1);ctx.stroke();
- ctx.beginPath();ctx.arc(0,7,7,0,Math.PI*2);ctx.fillStyle='#702f32';ctx.fill();ctx.strokeStyle='#ac6260';ctx.stroke();ctx.restore();
+ paint.fillStyle=p.paper;paint.fillRect(-44,-29,88,58);paint.shadowBlur=0;paint.shadowOffsetY=0;
+ paint.strokeStyle='#8b6d46';paint.lineWidth=1;paint.strokeRect(-44,-29,88,58);
+ paint.beginPath();paint.moveTo(-43,-28);paint.lineTo(0,6);paint.lineTo(43,-28);paint.fillStyle='#f4e1b42c';paint.fill();paint.stroke();
+ paint.beginPath();paint.moveTo(-43,28);paint.lineTo(-16,1);paint.moveTo(43,28);paint.lineTo(16,1);paint.stroke();
+ paint.beginPath();paint.arc(0,7,7,0,Math.PI*2);paint.fillStyle='#702f32';paint.fill();paint.strokeStyle='#ac6260';paint.stroke();paint.restore();
 }
-function render(){
+function render(ambient=false){
  ctx.clearRect(0,0,size,size);
- letters.forEach((p,index)=>{if(p!==gesture?.letter)envelope(p,false,pose(p,index))});
+ let start=0;
+ if(ambient){
+  start=Math.max(0,letters.length-floatingCount);
+  if(pileCacheDirty){
+   pilePaint.clearRect(0,0,size,size);
+   for(let i=0;i<start;i++)envelope(letters[i],false,letters[i],pilePaint);
+   pileCacheDirty=false;
+  }
+  ctx.drawImage(pileCache,0,0,size,size);
+ }else{
+  pileCacheDirty=true;
+ }
+ for(let i=start;i<letters.length;i++){
+  const letter=letters[i];
+  if(letter!==gesture?.letter)envelope(letter,false,pose(letter,i));
+ }
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -295,7 +314,14 @@ next.onclick=()=>{
 };
 reset.onclick=()=>{refill();draw.focus()};
 canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();draw.click()}if(event.key===' '){event.preventDefault();stir.click()}});
-function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*scale;canvas.height=size*scale;ctx.setTransform(scale,0,0,scale,0,0);render()}
+function resize(){
+ const pixels=Math.round(size*Math.min(devicePixelRatio||1,1.5));
+ canvas.width=canvas.height=pileCache.width=pileCache.height=pixels;
+ const scale=pixels/size;
+ ctx.setTransform(scale,0,0,scale,0,0);
+ pilePaint.setTransform(scale,0,0,scale,0,0);
+ render();
+}
 resize();refill();
 window.addEventListener('resize',resize);
 if(!reduced){
@@ -304,20 +330,25 @@ if(!reduced){
  });
  canvas.addEventListener('pointerleave',()=>{hoverTarget=null});
  const floatLetters=(now)=>{
-  if(!frame&&!gesture&&now-lastFloatFrame>=32){
-   lastFloatFrame=now;floatTime=now/800;
+  const elapsed=lastFloatFrame?Math.min(now-lastFloatFrame,48):16;
+  lastFloatFrame=now;
+  if(!frame&&!gesture){
+   floatTime+=elapsed/800;
    if(hoverTarget){
     if(hover.strength<.02){hover.x=hoverTarget.x;hover.y=hoverTarget.y}
-    hover.x+=(hoverTarget.x-hover.x)*.48;
-    hover.y+=(hoverTarget.y-hover.y)*.48;
+    const follow=1-Math.exp(-elapsed/53);
+    hover.x+=(hoverTarget.x-hover.x)*follow;
+    hover.y+=(hoverTarget.y-hover.y)*follow;
    }
-   hover.strength+=((hoverTarget?1:0)-hover.strength)*.25;
-   render();
+   const ease=1-Math.exp(-elapsed/(hoverTarget?65:160));
+   hover.strength+=((hoverTarget?1:0)-hover.strength)*ease;
+   render(true);
   }
   idleFrame=requestAnimationFrame(floatLetters);
  };
  new IntersectionObserver(([entry])=>{
   cancelAnimationFrame(idleFrame);
+  lastFloatFrame=0;
   if(entry.isIntersecting)idleFrame=requestAnimationFrame(floatLetters);
  }).observe(canvas);
 }
