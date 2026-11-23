@@ -27,6 +27,10 @@ canvas:active{cursor:grabbing}
 .examiner:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
+@media(prefers-reduced-motion:no-preference){
+ .examiner[data-open=false][data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
+}
+@keyframes letterHover{0%,100%{translate:0 -3px}50%{translate:0 -16px}}
 .face,.paper-edge{position:absolute;display:block}
 .face{inset:0;border-radius:2%;backface-visibility:hidden;box-shadow:0 18px 38px #04080490}
 .face-front{transform:translateZ(4px);background:url(envelope-photo.webp) center/100% 100% no-repeat;overflow:hidden}
