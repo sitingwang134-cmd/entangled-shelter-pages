@@ -4,4 +4,4 @@
 :HL["/entangled-shelter-pages/_next/static/css/9214a6eb93d44179.css","style"]
 :HL["/entangled-shelter-pages/_next/static/css/8a9f849cd3245f10.css","style"]
 :HL["/entangled-shelter-pages/_next/static/css/45d4d5c8b265aa20.css","style"]
-0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"IkldDOiVpYrcnqvT7NaYM"}
+0:{"tree":{"name":"","param":null,"prefetchHints":4176,"slots":{"children":{"name":"__PAGE__","param":null,"prefetchHints":4256,"slots":null}}},"staleTime":300,"buildId":"e67h6B3D-6PdYTL4YvnoS"}
