@@ -27,6 +27,10 @@ canvas:active{cursor:grabbing}
 .examiner:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
+@media(prefers-reduced-motion:no-preference){
+ .examiner[data-open=false][data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
+}
+@keyframes letterHover{0%,100%{translate:0 -3px}50%{translate:0 -16px}}
 .face,.paper-edge{position:absolute;display:block}
 .face{inset:0;border-radius:2%;backface-visibility:hidden;box-shadow:0 18px 38px #04080490}
 .face-front{transform:translateZ(4px);background:url(envelope-photo.webp) center/100% 100% no-repeat;overflow:hidden}
@@ -114,6 +118,7 @@ const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
+let floatTime=0, lastFloatFrame=0, idleFrame=0;
 const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
 let turn=-12, tilt=8, rotation=null, opened=false;
 const note=document.querySelector('#letter-note');
@@ -165,17 +170,24 @@ function refill(){
  letters = shuffled.map(({theme, idea}, i) => {
   const angle = rand(0, Math.PI * 2), distance = Math.sqrt(Math.random()) * 179;
   return {x:center + Math.cos(angle)*distance, y:center + Math.sin(angle)*distance, a:rand(-Math.PI,Math.PI),
-   vx:0, vy:0, va:0, paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
+   vx:0, vy:0, va:0, phase:rand(0,Math.PI*2), paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
  });
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='72 sealed letters across Taste, Style and Wander.';render();
 }
-function envelope(p,lifted=false){
- ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+function pose(p,index){
+ if(reduced || gesture || index<letters.length-16)return p;
+ const phase=floatTime+p.phase;
+ return {x:p.x+Math.sin(phase*.8)*6,y:p.y-9+Math.cos(phase)*8,a:p.a+Math.sin(phase*.9)*.085};
+}
+function envelope(p,lifted=false,position=p){
+ ctx.save();ctx.translate(position.x,position.y);ctx.rotate(position.a);
  if(lifted)ctx.scale(1.12,1.12);
- ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:7;ctx.shadowOffsetY=lifted?10:4;
+ ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:0;ctx.shadowOffsetY=lifted?10:0;
  if(envelopePhoto.naturalWidth){
   const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
-  ctx.drawImage(paperTextures[palette.indexOf(p.paper)] ?? envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  const texture=paperTextures[palette.indexOf(p.paper)];
+  if(texture&&!lifted)ctx.drawImage(texture,-texture.width/2,1-texture.height/2);
+  else ctx.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
   ctx.restore();
   return;
  }
@@ -187,7 +199,7 @@ function envelope(p,lifted=false){
 }
 function render(){
  ctx.clearRect(0,0,size,size);
- letters.forEach(p=>{if(p!==gesture?.letter)envelope(p)});
+ letters.forEach((p,index)=>{if(p!==gesture?.letter)envelope(p,false,pose(p,index))});
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -208,7 +220,13 @@ function movePile(){
 function wake(power=1){energy=Math.max(energy,power);if(reduced){movePile();cancelAnimationFrame(frame);frame=0}else if(!frame)frame=requestAnimationFrame(movePile)}
 function mix(x,y,dx,dy){for(const p of letters){const d=Math.hypot(p.x-x,p.y-y);if(d>120)continue;const weight=(1-d/120)*.28;p.vx+=dx*weight;p.vy+=dy*weight;p.va+=(dx-dy)*weight*.018}wake()}
 function point(event){const b=canvas.getBoundingClientRect();return {x:(event.clientX-b.left)/b.width*size,y:(event.clientY-b.top)/b.height*size}}
-function topLetter(q){return [...letters].reverse().find(p=>{const dx=q.x-p.x,dy=q.y-p.y;return Math.abs(dx*Math.cos(p.a)+dy*Math.sin(p.a))<44&&Math.abs(-dx*Math.sin(p.a)+dy*Math.cos(p.a))<29})}
+function topLetter(q){
+ for(let index=letters.length-1;index>=0;index--){
+  const {x,y,a}=pose(letters[index],index);
+  const dx=q.x-x,dy=q.y-y;
+  if(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))<44&&Math.abs(-dx*Math.sin(a)+dy*Math.cos(a))<29)return letters[index];
+ }
+}
 function lift(p){if(!p||selected)return;next.hidden=true;selected=p;letters=letters.filter(x=>x!==p);gesture=null;result.hidden=false;showExaminer();putBack.hidden=false;reveal.textContent='A sealed letter';status.textContent='You drew one. Click the envelope to open it.';draw.disabled=true;reset.hidden=false;render();examiner.focus()}
 canvas.addEventListener('pointerdown',event=>{
  if(!event.isPrimary||event.button!==0)return;
@@ -255,5 +273,17 @@ canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventD
 function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*scale;canvas.height=size*scale;ctx.setTransform(scale,0,0,scale,0,0);render()}
 resize();refill();
 window.addEventListener('resize',resize);
+if(!reduced){
+ const floatLetters=(now)=>{
+  if(!frame&&!gesture&&now-lastFloatFrame>=48){
+   lastFloatFrame=now;floatTime=now/800;render();
+  }
+  idleFrame=requestAnimationFrame(floatLetters);
+ };
+ new IntersectionObserver(([entry])=>{
+  cancelAnimationFrame(idleFrame);
+  if(entry.isIntersecting)idleFrame=requestAnimationFrame(floatLetters);
+ }).observe(canvas);
+}
 </script>
 </html>
