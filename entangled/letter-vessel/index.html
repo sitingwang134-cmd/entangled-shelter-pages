@@ -27,6 +27,10 @@ canvas:active{cursor:grabbing}
 .examiner:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
+@media(prefers-reduced-motion:no-preference){
+ .examiner[data-open=false][data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
+}
+@keyframes letterHover{0%,100%{translate:0 -3px}50%{translate:0 -16px}}
 .face,.paper-edge{position:absolute;display:block}
 .face{inset:0;border-radius:2%;backface-visibility:hidden;box-shadow:0 18px 38px #04080490}
 .face-front{transform:translateZ(4px);background:url(envelope-photo.webp) center/100% 100% no-repeat;overflow:hidden}
@@ -45,7 +49,7 @@ canvas:active{cursor:grabbing}
 .examiner[data-open=true] .open-pocket,.examiner[data-open=true] .open-flap,.examiner[data-open=true] .letter-note{display:block}
 .open-pocket{inset:0;z-index:3;background:url(envelope-photo.webp) center/100% 100%;clip-path:polygon(0 45%,50% 73%,100% 45%,100% 100%,0 100%)}
 .open-flap{inset:0;z-index:1;background:linear-gradient(155deg,#e9d5ae,#b8996c);clip-path:polygon(0 0,100% 0,50% 64%);transform-origin:top center;animation:liftFlap .45s ease-out both}
-.letter-note{z-index:2;inset:9% 8% 0;background:linear-gradient(153deg,#f7e8cc,#d4bb90);border:1px solid #a88a60;place-items:center;text-align:center;padding:9px;color:#263d2b;font-size:clamp(17px,3vw,34px);animation:slideNote .5s .32s ease-out both}
+.letter-note{z-index:2;inset:9% 8% 0;background:url(aged-letter-paper.webp) center / 100% 100% no-repeat;filter:drop-shadow(0 4px 5px #20140859);place-items:center;text-align:center;padding:7% 9%;color:#263d2b;font-size:clamp(17px,3vw,34px);animation:slideNote .5s .32s ease-out both}
 .examiner[data-open=true] .letter-note{display:grid}
 @keyframes liftFlap{to{transform:rotateX(168deg)}}
 @keyframes slideNote{from{transform:translateY(0);opacity:0}to{transform:translateY(-64%);opacity:1}}
@@ -54,7 +58,7 @@ canvas:active{cursor:grabbing}
 <main>
 <header><small>The Ritual</small><h1>The Letter Vessel</h1><p>Stir the pile. Tap a letter to lift it, or drag one away from the pile.</p>
 <div class="buttons"><button id="stir">Stir the letters</button><button id="draw">Draw a letter</button><button id="reset" hidden>Refill the vessel</button></div>
-<p id="status" role="status">72 sealed letters across Taste, Style and Wander.</p>
+<p id="status" role="status">108 sealed letters across Taste, Style and Wander.</p>
 <section id="result" hidden><h2 id="reveal">A sealed letter</h2><button id="return">Put it back</button> <button id="next" hidden>Draw again</button></section>
 </header>
 <div class="vessel-stage"><canvas id="vessel" aria-label="Letter vessel. Drag to stir, or pull a letter away from the pile. Press Enter to draw." tabindex="0"></canvas>
@@ -75,23 +79,27 @@ const envelopePhoto=new Image();
 envelopePhoto.onload=()=>{
  for(let i=0;i<palette.length;i++){
   const texture=document.createElement('canvas');
-  texture.width=envelopePhoto.naturalWidth;texture.height=envelopePhoto.naturalHeight;
+  const height=Math.round(91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth);
+  texture.width=111;texture.height=height+22;
   const paint=texture.getContext('2d');
   paint.filter=`brightness(${.83+i*.055})`;
-  paint.drawImage(envelopePhoto,0,0);
+  paint.shadowColor='#040806a0';paint.shadowBlur=7;paint.shadowOffsetY=4;
+  paint.drawImage(envelopePhoto,10,10,91,height);
   paperTextures.push(texture);
  }
  render();
 };
 envelopePhoto.src='envelope-photo.webp';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const size=540,center=270,radius=204;
+const size=540,center=270,radius=220;
 const ideas = {
  Taste: [
   'Miso ramen','Mushroom risotto','Street tacos','Tomato pasta','Steamed dumplings','Spiced lentils',
   'Margherita pizza','Chickpea salad','Vegetable curry','Roast aubergine','Grilled halloumi','Tomato toast',
   'Mushroom pie','Sweet potato soup','Falafel wrap','Kimchi fried rice','Spinach gnocchi','Breakfast for dinner',
   'Sesame noodles','Baked potatoes','Goat cheese tart','Black bean burrito','Lemon orzo','A picnic supper',
+  'Coconut rice bowl','Greek salad','Corn chowder','Vegetable tempura','Pumpkin ravioli','Roasted cauliflower',
+  'Spinach and feta pastry','White bean stew','Soba with greens','Cheese and onion toastie','Mushroom flatbread','Ginger tofu',
  ],
  Style: [
   'Try a monochrome look','Pair denim with a white tee','Wear soft neutrals','Start with a linen shirt',
@@ -100,6 +108,9 @@ const ideas = {
   'Dress around your favourite shoes','Pair navy with cream','Wear your favourite vintage piece','Try brown and olive',
   'Pair a knit with wide-leg trousers','Wear a crisp white shirt','Try a tonal denim outfit','Build a look in black and gold',
   'Pair corduroy with a plain tee','Try a leather jacket','Wear a bright knit','Pair trainers with tailoring',
+  'Pair a denim jacket with chinos','Try a checked blazer','Wear a long wool coat','Try a navy cardigan',
+  'Pair pleats with a soft tee','Layer a turtleneck under a jacket','Style a trench coat','Try a canvas tote',
+  'Pair chocolate brown with cream','Add a patterned belt','Try a scarf in a contrasting colour','Wear a relaxed suit',
  ],
  Wander: [
   'Take a woodland walk','Visit a small gallery','Explore an old town','Spend an hour by the river',
@@ -108,12 +119,16 @@ const ideas = {
   'Visit a small museum','Pack a picnic for the park','Follow a canal towpath','Watch the sunset somewhere new',
   'Visit a historic house','Walk around a lake','Take the scenic route home','Explore a quiet village',
   'Find a sunrise viewpoint','Spend an afternoon at a library','Explore the city by tram','Visit a weekend craft market',
+  'Visit an independent cinema','Explore a sculpture park','Take a ferry across the river','Walk to a waterfront café',
+  'Find a public garden','Visit a photography exhibition','Take a cycle path out of town','Walk a stretch of coastline',
+  'Explore a covered market','Follow a street art trail','Visit a local observatory','Take a day trip by bus',
  ],
 };
 const options = Object.entries(ideas).flatMap(([theme, entries]) => entries.map(idea => ({theme, idea})));
 const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
 const paperTextures=[];
 let letters=[],gesture=null,selected=null,frame=0,energy=0;
+let floatTime=0, lastFloatFrame=0, idleFrame=0;
 const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
 let turn=-12, tilt=8, rotation=null, opened=false;
 const note=document.querySelector('#letter-note');
@@ -163,19 +178,26 @@ function refill(){
   [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
  }
  letters = shuffled.map(({theme, idea}, i) => {
-  const angle = rand(0, Math.PI * 2), distance = Math.sqrt(Math.random()) * 179;
+  const angle = rand(0, Math.PI * 2), distance = Math.sqrt(Math.random()) * 195;
   return {x:center + Math.cos(angle)*distance, y:center + Math.sin(angle)*distance, a:rand(-Math.PI,Math.PI),
-   vx:0, vy:0, va:0, paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
+   vx:0, vy:0, va:0, phase:rand(0,Math.PI*2), paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
  });
- selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='72 sealed letters across Taste, Style and Wander.';render();
+ selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
-function envelope(p,lifted=false){
- ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+function pose(p,index){
+ if(reduced || gesture || index<letters.length-16)return p;
+ const phase=floatTime+p.phase;
+ return {x:p.x+Math.sin(phase*.8)*6,y:p.y-9+Math.cos(phase)*8,a:p.a+Math.sin(phase*.9)*.085};
+}
+function envelope(p,lifted=false,position=p){
+ ctx.save();ctx.translate(position.x,position.y);ctx.rotate(position.a);
  if(lifted)ctx.scale(1.12,1.12);
- ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:7;ctx.shadowOffsetY=lifted?10:4;
+ ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:0;ctx.shadowOffsetY=lifted?10:0;
  if(envelopePhoto.naturalWidth){
   const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
-  ctx.drawImage(paperTextures[palette.indexOf(p.paper)] ?? envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  const texture=paperTextures[palette.indexOf(p.paper)];
+  if(texture&&!lifted)ctx.drawImage(texture,-texture.width/2,1-texture.height/2);
+  else ctx.drawImage(envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
   ctx.restore();
   return;
  }
@@ -187,7 +209,7 @@ function envelope(p,lifted=false){
 }
 function render(){
  ctx.clearRect(0,0,size,size);
- letters.forEach(p=>{if(p!==gesture?.letter)envelope(p)});
+ letters.forEach((p,index)=>{if(p!==gesture?.letter)envelope(p,false,pose(p,index))});
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -208,7 +230,13 @@ function movePile(){
 function wake(power=1){energy=Math.max(energy,power);if(reduced){movePile();cancelAnimationFrame(frame);frame=0}else if(!frame)frame=requestAnimationFrame(movePile)}
 function mix(x,y,dx,dy){for(const p of letters){const d=Math.hypot(p.x-x,p.y-y);if(d>120)continue;const weight=(1-d/120)*.28;p.vx+=dx*weight;p.vy+=dy*weight;p.va+=(dx-dy)*weight*.018}wake()}
 function point(event){const b=canvas.getBoundingClientRect();return {x:(event.clientX-b.left)/b.width*size,y:(event.clientY-b.top)/b.height*size}}
-function topLetter(q){return [...letters].reverse().find(p=>{const dx=q.x-p.x,dy=q.y-p.y;return Math.abs(dx*Math.cos(p.a)+dy*Math.sin(p.a))<44&&Math.abs(-dx*Math.sin(p.a)+dy*Math.cos(p.a))<29})}
+function topLetter(q){
+ for(let index=letters.length-1;index>=0;index--){
+  const {x,y,a}=pose(letters[index],index);
+  const dx=q.x-x,dy=q.y-y;
+  if(Math.abs(dx*Math.cos(a)+dy*Math.sin(a))<44&&Math.abs(-dx*Math.sin(a)+dy*Math.cos(a))<29)return letters[index];
+ }
+}
 function lift(p){if(!p||selected)return;next.hidden=true;selected=p;letters=letters.filter(x=>x!==p);gesture=null;result.hidden=false;showExaminer();putBack.hidden=false;reveal.textContent='A sealed letter';status.textContent='You drew one. Click the envelope to open it.';draw.disabled=true;reset.hidden=false;render();examiner.focus()}
 canvas.addEventListener('pointerdown',event=>{
  if(!event.isPrimary||event.button!==0)return;
@@ -255,5 +283,17 @@ canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventD
 function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*scale;canvas.height=size*scale;ctx.setTransform(scale,0,0,scale,0,0);render()}
 resize();refill();
 window.addEventListener('resize',resize);
+if(!reduced){
+ const floatLetters=(now)=>{
+  if(!frame&&!gesture&&now-lastFloatFrame>=48){
+   lastFloatFrame=now;floatTime=now/800;render();
+  }
+  idleFrame=requestAnimationFrame(floatLetters);
+ };
+ new IntersectionObserver(([entry])=>{
+  cancelAnimationFrame(idleFrame);
+  if(entry.isIntersecting)idleFrame=requestAnimationFrame(floatLetters);
+ }).observe(canvas);
+}
 </script>
 </html>
