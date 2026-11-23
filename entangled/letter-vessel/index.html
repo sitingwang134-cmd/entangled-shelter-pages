@@ -27,10 +27,6 @@ canvas:active{cursor:grabbing}
 .examiner:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
-@media(prefers-reduced-motion:no-preference){
- .examiner[data-open=false][data-dragging=false] .envelope-model{animation:letterHover 4.8s ease-in-out infinite}
-}
-@keyframes letterHover{0%,100%{translate:0 -3px}50%{translate:0 -16px}}
 .face,.paper-edge{position:absolute;display:block}
 .face{inset:0;border-radius:2%;backface-visibility:hidden;box-shadow:0 18px 38px #04080490}
 .face-front{transform:translateZ(4px);background:url(envelope-photo.webp) center/100% 100% no-repeat;overflow:hidden}
@@ -132,7 +128,7 @@ const floatingCount=24;
 const pileCache=document.createElement('canvas');
 const pilePaint=pileCache.getContext('2d');
 let pileCacheDirty=true;
-let floatTime=0, lastFloatFrame=0, idleFrame=0;
+let lastHoverFrame=0, hoverFrame=0;
 const hover={x:0,y:0,strength:0};
 let hoverTarget=null;
 const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
@@ -191,21 +187,20 @@ function refill(){
  letters = shuffled.map(({theme, idea}, i) => {
   const angle = rand(0, Math.PI * 2), distance = Math.sqrt(Math.random()) * 195;
   return {x:center + Math.cos(angle)*distance, y:center + Math.sin(angle)*distance, a:rand(-Math.PI,Math.PI),
-   vx:0, vy:0, va:0, phase:rand(0,Math.PI*2), paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
+   vx:0, vy:0, va:0, paper:palette[i%palette.length], answer:`${theme} · ${idea}`};
  });
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='108 sealed letters across Taste, Style and Wander.';render();
 }
 function pose(p,index){
  if(reduced || gesture || index<letters.length-floatingCount)return p;
- const phase=floatTime+p.phase;
  const dx=p.x-hover.x,dy=p.y-hover.y;
  const distance=Math.hypot(dx,dy);
  const push=hover.strength*Math.max(0,1-distance/135);
  const divisor=Math.max(24,distance);
  return {
-  x:p.x+Math.sin(phase*.8)*6+dx/divisor*push*27,
-  y:p.y-9+Math.cos(phase)*8+dy/divisor*push*20-push*12,
-  a:p.a+Math.sin(phase*.9)*.085+dx/divisor*push*.18,
+  x:p.x+dx/divisor*push*27,
+  y:p.y+dy/divisor*push*20-push*12,
+  a:p.a+dx/divisor*push*.18,
  };
 }
 function envelope(p,lifted=false,position=p,paint=ctx){
@@ -325,32 +320,36 @@ function resize(){
 resize();refill();
 window.addEventListener('resize',resize);
 if(!reduced){
+ const animateHover=(now)=>{
+  hoverFrame=0;
+  const elapsed=lastHoverFrame?Math.min(now-lastHoverFrame,48):16;
+  lastHoverFrame=now;
+  if(frame||gesture){
+   hoverTarget=null;
+   hover.strength=0;
+   lastHoverFrame=0;
+   return;
+  }
+  if(hoverTarget){
+   if(hover.strength<.02){hover.x=hoverTarget.x;hover.y=hoverTarget.y}
+   const follow=1-Math.exp(-elapsed/53);
+   hover.x+=(hoverTarget.x-hover.x)*follow;
+   hover.y+=(hoverTarget.y-hover.y)*follow;
+  }
+  const ease=1-Math.exp(-elapsed/(hoverTarget?65:160));
+  hover.strength+=((hoverTarget?1:0)-hover.strength)*ease;
+  const settled=!hoverTarget&&hover.strength<.005;
+  if(settled)hover.strength=0;
+  render(true);
+  if(settled)lastHoverFrame=0;
+  else hoverFrame=requestAnimationFrame(animateHover);
+ };
  canvas.addEventListener('pointermove',event=>{
-  if(event.pointerType==='mouse' && !gesture)hoverTarget=point(event);
+  if(event.pointerType!=='mouse'||gesture||frame)return;
+  hoverTarget=point(event);
+  if(!hoverFrame)hoverFrame=requestAnimationFrame(animateHover);
  });
  canvas.addEventListener('pointerleave',()=>{hoverTarget=null});
- const floatLetters=(now)=>{
-  const elapsed=lastFloatFrame?Math.min(now-lastFloatFrame,48):16;
-  lastFloatFrame=now;
-  if(!frame&&!gesture){
-   floatTime+=elapsed/800;
-   if(hoverTarget){
-    if(hover.strength<.02){hover.x=hoverTarget.x;hover.y=hoverTarget.y}
-    const follow=1-Math.exp(-elapsed/53);
-    hover.x+=(hoverTarget.x-hover.x)*follow;
-    hover.y+=(hoverTarget.y-hover.y)*follow;
-   }
-   const ease=1-Math.exp(-elapsed/(hoverTarget?65:160));
-   hover.strength+=((hoverTarget?1:0)-hover.strength)*ease;
-   render(true);
-  }
-  idleFrame=requestAnimationFrame(floatLetters);
- };
- new IntersectionObserver(([entry])=>{
-  cancelAnimationFrame(idleFrame);
-  lastFloatFrame=0;
-  if(entry.isIntersecting)idleFrame=requestAnimationFrame(floatLetters);
- }).observe(canvas);
 }
 </script>
 </html>
