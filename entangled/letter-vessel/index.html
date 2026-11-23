@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Letter Vessel · Entangled Shelter</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;color:#f4e6c9;font:16px Georgia,serif}
+main{max-width:1320px;margin:auto;padding:24px;display:grid;grid-template-columns:minmax(205px,.75fr) minmax(0,1.65fr);gap:clamp(12px,3vw,46px);align-items:center;min-height:100vh}
+header{border-top:1px solid #b89761;padding-top:18px}
+h1{font-weight:400;font-size:clamp(40px,6vw,86px);line-height:.98;margin:12px 0 20px}
+small{color:#e5c487;text-transform:uppercase;letter-spacing:.13em}
+p{line-height:1.48}
+button{background:#192d23;color:inherit;border:1px solid #b3965f;padding:9px 14px;font:inherit;cursor:pointer}
+button:focus-visible,canvas:focus-visible,.examiner:focus-visible{outline:2px solid #e5c88c;outline-offset:3px}
+canvas{width:100%;aspect-ratio:1;touch-action:none;cursor:grab;display:block}
+canvas:active{cursor:grabbing}
+.buttons{display:flex;gap:8px;flex-wrap:wrap}
+#result{margin-top:12px}
+#result h2{font-size:1.15rem;margin:0 0 8px;font-weight:400}
+[hidden]{display:none!important}
+#status{color:#e1ca9f;min-height:48px}
+@media(max-width:650px){main{display:flex;flex-direction:column;padding:40px 4px 24px;gap:14px;min-height:auto;align-items:stretch}h1{font-size:clamp(38px,9vw,58px)}.vessel-stage{width:min(100%,580px);margin:auto}#status{min-height:0}}
+.vessel-stage{position:relative;min-width:0;width:min(100%,calc(100vh - 48px));justify-self:center}
+.examiner{position:absolute;inset:0;display:grid;place-items:center;perspective:780px;background:radial-gradient(ellipse,#08150de8 0%,#08150d65 55%,transparent 72%);touch-action:none;cursor:grab}
+.examiner:active{cursor:grabbing}
+.envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
+.examiner[data-dragging=true] .envelope-model{transition:none}
+.face,.paper-edge{position:absolute;display:block}
+.face{inset:0;border-radius:2%;backface-visibility:hidden;box-shadow:0 18px 38px #04080490}
+.face-front{transform:translateZ(4px);background:url(envelope-photo.webp) center/100% 100% no-repeat;overflow:hidden}
+.face-front::after{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at var(--lx,50%) var(--ly,40%),#fff6d659,transparent 65%);mix-blend-mode:screen}
+.face-back{transform:rotateY(180deg) translateZ(4px);background:linear-gradient(140deg,#eaddb9,#c4a573);border:1px solid #c3a378;color:#51442e;display:grid;place-items:center;text-align:center;box-shadow:inset 0 0 19px #6b472a55}
+.face-back i{border:1px solid #84663f;padding:4px 13px;font-size:clamp(12px,2vw,20px)}
+.paper-edge{width:8px;height:97%;top:1.5%;background:linear-gradient(90deg,#8f734d,#d8c498,#ac8d5d)}
+.paper-edge.left{left:-4px;transform:rotateY(-90deg)}
+.paper-edge.right{right:-4px;transform:rotateY(90deg)}
+.view-hint{position:absolute;bottom:11%;margin:0;color:#e6cb94;font-size:.86rem;pointer-events:none;text-shadow:0 1px 5px #000}
+@media(prefers-reduced-motion:reduce){.envelope-model{transition:none}}
+
+.open-pocket,.open-flap,.letter-note{display:none;position:absolute}
+.examiner[data-open=true] .face-front{overflow:visible;background:#d4b382}
+.examiner[data-open=true] .face-front::after{display:none}
+.examiner[data-open=true] .open-pocket,.examiner[data-open=true] .open-flap,.examiner[data-open=true] .letter-note{display:block}
+.open-pocket{inset:0;z-index:3;background:url(envelope-photo.webp) center/100% 100%;clip-path:polygon(0 45%,50% 73%,100% 45%,100% 100%,0 100%)}
+.open-flap{inset:0;z-index:1;background:linear-gradient(155deg,#e9d5ae,#b8996c);clip-path:polygon(0 0,100% 0,50% 64%);transform-origin:top center;animation:liftFlap .45s ease-out both}
+.letter-note{z-index:2;inset:9% 8% 0;background:linear-gradient(153deg,#f7e8cc,#d4bb90);border:1px solid #a88a60;place-items:center;text-align:center;padding:9px;color:#263d2b;font-size:clamp(17px,3vw,34px);animation:slideNote .5s .32s ease-out both}
+.examiner[data-open=true] .letter-note{display:grid}
+@keyframes liftFlap{to{transform:rotateX(168deg)}}
+@keyframes slideNote{from{transform:translateY(0);opacity:0}to{transform:translateY(-64%);opacity:1}}
+@media(prefers-reduced-motion:reduce){.open-flap,.letter-note{animation-delay:0s;animation-duration:1ms}}
+</style>
+<main>
+<header><small>The Ritual</small><h1>The Letter Vessel</h1><p>Stir the pile. Catch a letter and drag it out over the rim, or tap one to lift it.</p>
+<div class="buttons"><button id="stir">Stir the letters</button><button id="draw">Draw a letter</button><button id="reset" hidden>Refill the vessel</button></div>
+<p id="status" role="status">48 sealed letters. Each holds a dinner idea.</p>
+<section id="result" hidden><h2 id="reveal">A sealed letter</h2><button id="return">Put it back</button> <button id="next" hidden>Draw again</button></section>
+</header>
+<div class="vessel-stage"><canvas id="vessel" aria-label="Letter vessel. Drag to stir or pull a letter over the rim. Press Enter to draw." tabindex="0"></canvas>
+<div class="examiner" id="examiner" tabindex="0" aria-label="Open drawn envelope. Drag or use the arrow keys to turn it." hidden>
+  <div class="envelope-model" id="envelope-model" aria-hidden="true">
+    <div class="face face-front"><div class="open-pocket"></div><div class="open-flap"></div><div class="letter-note" id="letter-note"></div></div><div class="face face-back"><i>Private correspondence</i></div>
+    <div class="paper-edge left"></div><div class="paper-edge right"></div>
+  </div>
+  <p class="view-hint">Click the letter to open it · Drag to turn</p>
+</div></div>
+</main>
+<script>
+const canvas=document.querySelector('#vessel'),ctx=canvas.getContext('2d');
+const status=document.querySelector('#status'),result=document.querySelector('#result'),reveal=document.querySelector('#reveal');
+const next=document.querySelector('#next');
+const reset=document.querySelector('#reset'),draw=document.querySelector('#draw'),stir=document.querySelector('#stir'),putBack=document.querySelector('#return');
+const vesselPhoto=new Image(), envelopePhoto=new Image();
+vesselPhoto.onload=()=>render();
+envelopePhoto.onload=()=>{
+ for(let i=0;i<palette.length;i++){
+  const texture=document.createElement('canvas');
+  texture.width=envelopePhoto.naturalWidth;texture.height=envelopePhoto.naturalHeight;
+  const paint=texture.getContext('2d');
+  paint.filter=`brightness(${.83+i*.055})`;
+  paint.drawImage(envelopePhoto,0,0);
+  paperTextures.push(texture);
+ }
+ render();
+};
+vesselPhoto.src='vessel-photo.webp';
+envelopePhoto.src='envelope-photo.webp';
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const size=540,center=270,radius=204;
+const menu=['Miso ramen','Mushroom risotto','Street tacos','Tomato pasta','Dumplings','Spiced lentils','Margherita pizza','Chickpea salad'];
+const palette=['#e7d2a5','#d9be8a','#efdfb6','#b9ac8d','#d4c1a0'];
+const paperTextures=[];
+let letters=[],gesture=null,selected=null,frame=0,energy=0;
+const examiner=document.querySelector('#examiner'), model=document.querySelector('#envelope-model');
+let turn=-12, tilt=8, rotation=null, opened=false;
+const note=document.querySelector('#letter-note');
+const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
+function orient(yaw=turn,pitch=tilt){
+ model.style.setProperty('--ry',yaw+'deg');model.style.setProperty('--rx',pitch+'deg');
+}
+function showExaminer(){
+ turn=-12;tilt=8;rotation=null;examiner.dataset.dragging='false';
+ opened=false;examiner.dataset.open='false';examiner.querySelector('.view-hint').textContent='Click the letter to open it · Drag to turn';
+ orient();examiner.hidden=false;
+}
+examiner.addEventListener('pointerdown',e=>{
+ if(opened||!e.isPrimary||e.button!==0)return;
+ rotation={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:turn,pitch:tilt};
+ examiner.dataset.dragging='true';examiner.setPointerCapture(e.pointerId);
+});
+examiner.addEventListener('pointermove',e=>{
+ if(opened)return;
+ const b=examiner.getBoundingClientRect(),x=clamp((e.clientX-b.left)/b.width,0,1),y=clamp((e.clientY-b.top)/b.height,0,1);
+ model.style.setProperty('--lx',`${x*100}%`);model.style.setProperty('--ly',`${y*100}%`);
+ if(rotation?.id===e.pointerId){
+  turn=rotation.yaw+(e.clientX-rotation.x)*1.45;
+  tilt=clamp(rotation.pitch-(e.clientY-rotation.y)*.36,-28,28);
+  orient();
+ }else if(!reduced&&e.pointerType==='mouse')orient(turn+(x-.5)*23,tilt-(y-.5)*17);
+});
+for(const event of ['pointerup','pointercancel','lostpointercapture'])examiner.addEventListener(event,e=>{
+ if(rotation?.id!==e.pointerId)return;
+ const wasClick=event==='pointerup'&&Math.hypot(e.clientX-rotation.x,e.clientY-rotation.y)<6&&model.contains(document.elementFromPoint(e.clientX,e.clientY));
+ rotation=null;examiner.dataset.dragging='false';
+ if(wasClick)openLetter();
+});
+examiner.addEventListener('pointerleave',()=>{if(!rotation)orient()});
+examiner.addEventListener('keydown',e=>{
+ if(e.key==='Enter'||e.key===' '){e.preventDefault();openLetter();return}
+ if(opened)return;
+ const direction={ArrowLeft:-1,ArrowRight:1}[e.key];
+ if(direction){e.preventDefault();turn+=direction*30;orient()}
+});
+
+const rand=(a,b)=>a+Math.random()*(b-a);
+function refill(){
+ letters=Array.from({length:48},(_,i)=>{const angle=rand(0,Math.PI*2),distance=Math.sqrt(Math.random())*173;return {x:center+Math.cos(angle)*distance,y:center+Math.sin(angle)*distance,a:rand(-Math.PI,Math.PI),vx:0,vy:0,va:0,paper:palette[i%palette.length],answer:menu[i%menu.length]}});
+ selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='48 sealed letters. Each holds a dinner idea.';render();
+}
+function ring(r,paint,width){ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.strokeStyle=paint;ctx.lineWidth=width;ctx.stroke()}
+function disc(r,paint){ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.fillStyle=paint;ctx.fill()}
+function envelope(p,lifted=false){
+ ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
+ if(lifted)ctx.scale(1.12,1.12);
+ ctx.shadowColor='#040806a0';ctx.shadowBlur=lifted?18:7;ctx.shadowOffsetY=lifted?10:4;
+ if(envelopePhoto.naturalWidth){
+  const paperHeight=91*envelopePhoto.naturalHeight/envelopePhoto.naturalWidth;
+  ctx.drawImage(paperTextures[palette.indexOf(p.paper)] ?? envelopePhoto,-45.5,-paperHeight/2,91,paperHeight);
+  ctx.restore();
+  return;
+ }
+ ctx.fillStyle=p.paper;ctx.fillRect(-44,-29,88,58);ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+ ctx.strokeStyle='#8b6d46';ctx.lineWidth=1;ctx.strokeRect(-44,-29,88,58);
+ ctx.beginPath();ctx.moveTo(-43,-28);ctx.lineTo(0,6);ctx.lineTo(43,-28);ctx.fillStyle='#f4e1b42c';ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(-43,28);ctx.lineTo(-16,1);ctx.moveTo(43,28);ctx.lineTo(16,1);ctx.stroke();
+ ctx.beginPath();ctx.arc(0,7,7,0,Math.PI*2);ctx.fillStyle='#702f32';ctx.fill();ctx.strokeStyle='#ac6260';ctx.stroke();ctx.restore();
+}
+function render(){
+ ctx.clearRect(0,0,size,size);
+ const brass=ctx.createLinearGradient(95,0,437,540);
+ [[0,'#71522b'],[.23,'#edcf8a'],[.47,'#8e6536'],[.67,'#e3c17c'],[1,'#4f351f']].forEach(([a,c])=>brass.addColorStop(a,c));
+ ctx.shadowColor='#030906';ctx.shadowBlur=27;ctx.shadowOffsetY=13;disc(239,'#33281d');ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+ ring(228,brass,24);ring(238,'#d8bb78',1);ring(219,'#442f1c',2);
+ const depth=ctx.createRadialGradient(235,252,34,center,center,217);
+ depth.addColorStop(0,'#6b4b30');depth.addColorStop(.68,'#3e2c22');depth.addColorStop(1,'#100f0e');disc(216,depth);
+ if(vesselPhoto.naturalWidth)ctx.drawImage(vesselPhoto,27,27,486,486);
+ ctx.save();ctx.beginPath();ctx.arc(center,center,204,0,Math.PI*2);ctx.clip();
+ letters.forEach(p=>{if(p!==gesture?.letter)envelope(p)});ctx.restore();
+ if(!vesselPhoto.naturalWidth){ring(214,'#ba985b',2);ring(217,'#342315',3);
+ ctx.save();ctx.translate(center,center);ctx.strokeStyle='#4f351fb0';ctx.lineWidth=1;
+ for(let i=0;i<60;i++){ctx.rotate(Math.PI/30);ctx.beginPath();ctx.moveTo(226,0);ctx.lineTo(233,3);ctx.stroke()}ctx.restore();}
+ if(gesture?.letter)envelope(gesture.letter,true);
+}
+function movePile(){
+ frame=0;energy*=.91;
+ for(const p of letters){
+  if(p===gesture?.letter)continue;
+  p.x+=p.vx;p.y+=p.vy;p.a+=p.va;p.vx*=.88;p.vy*=.88;p.va*=.87;
+  const dx=p.x-center,dy=p.y-center,d=Math.hypot(dx,dy);
+  if(d>radius-23){p.x=center+dx*(radius-23)/d;p.y=center+dy*(radius-23)/d;p.vx*=.45;p.vy*=.45}
+ }
+ for(let i=0;i<letters.length;i++)for(let j=i+1;j<letters.length;j++){
+  const a=letters[i],b=letters[j];if(a===gesture?.letter||b===gesture?.letter)continue;
+  const x=b.x-a.x,y=b.y-a.y,d=Math.hypot(x,y);if(d>=27||d<.01)continue;
+  const force=(27-d)*.065;a.vx-=x/d*force;a.vy-=y/d*force;b.vx+=x/d*force;b.vy+=y/d*force;
+ }
+ render();if(energy>.018)frame=requestAnimationFrame(movePile);
+}
+function wake(power=1){energy=Math.max(energy,power);if(reduced){movePile();cancelAnimationFrame(frame);frame=0}else if(!frame)frame=requestAnimationFrame(movePile)}
+function mix(x,y,dx,dy){for(const p of letters){const d=Math.hypot(p.x-x,p.y-y);if(d>120)continue;const weight=(1-d/120)*.28;p.vx+=dx*weight;p.vy+=dy*weight;p.va+=(dx-dy)*weight*.018}wake()}
+function point(event){const b=canvas.getBoundingClientRect();return {x:(event.clientX-b.left)/b.width*size,y:(event.clientY-b.top)/b.height*size}}
+function topLetter(q){return [...letters].reverse().find(p=>{const dx=q.x-p.x,dy=q.y-p.y;return Math.abs(dx*Math.cos(p.a)+dy*Math.sin(p.a))<44&&Math.abs(-dx*Math.sin(p.a)+dy*Math.cos(p.a))<29})}
+function lift(p){if(!p||selected)return;next.hidden=true;selected=p;letters=letters.filter(x=>x!==p);gesture=null;result.hidden=false;showExaminer();putBack.hidden=false;reveal.textContent='A sealed letter';status.textContent='You drew one. Click the envelope to open it.';draw.disabled=true;reset.hidden=false;render();examiner.focus()}
+canvas.addEventListener('pointerdown',event=>{
+ if(!event.isPrimary||event.button!==0)return;
+ const q=point(event);gesture={id:event.pointerId,start:q,last:q,candidate:topLetter(q),letter:null,mode:'pending'};canvas.setPointerCapture(event.pointerId);
+});
+canvas.addEventListener('pointermove',event=>{
+ if(gesture?.id!==event.pointerId)return;
+ const q=point(event),g=gesture,dx=q.x-g.last.x,dy=q.y-g.last.y;
+ const total=Math.hypot(q.x-g.start.x,q.y-g.start.y);
+ const startRadius=Math.hypot(g.start.x-center,g.start.y-center),nowRadius=Math.hypot(q.x-center,q.y-center);
+ if(g.mode==='pending'&&total>8){
+  // A quick outward sweep near the rim catches a letter. Curved or central motions stir.
+  if(!selected&&g.candidate&&startRadius>77&&nowRadius-startRadius>total*.62){g.mode='pull';g.letter=g.candidate;status.textContent='Keep pulling past the brass rim.'}
+  else {g.mode='stir';status.textContent='The letters are mixing. Tap one, or pull one out over the rim.'}
+ }
+ if(g.mode==='stir')mix(q.x,q.y,dx,dy);
+ if(g.mode==='pull'){g.letter.x=q.x;g.letter.y=q.y;render();if(nowRadius>radius+23)lift(g.letter)}
+ g.last=q;
+});
+function release(event){
+ const g=gesture;if(g?.id!==event.pointerId)return;gesture=null;
+ if(event.type==='pointerup'&&g.mode==='pending'&&g.candidate&&!selected){lift(g.candidate);return}
+ if(g.letter){const dx=g.letter.x-center,dy=g.letter.y-center,d=Math.max(1,Math.hypot(dx,dy));const distance=Math.min(155,d);g.letter.x=center+dx/d*distance;g.letter.y=center+dy/d*distance;status.textContent='The letter slipped back into the pile.'}
+ render();
+}
+canvas.addEventListener('pointerup',release);canvas.addEventListener('pointercancel',release);canvas.addEventListener('lostpointercapture',release);
+draw.onclick=()=>lift(letters.at(-1));
+stir.onclick=()=>{for(const p of letters){const x=p.x-center,y=p.y-center;p.vx=-y*.075+rand(-7,7);p.vy=x*.075+rand(-7,7);p.va=rand(-.19,.19)}wake(1.8);status.textContent='The letters are mixing.'};
+function openLetter(){
+ if(!selected||opened)return;
+ opened=true;rotation=null;orient(0,0);examiner.dataset.open='true';
+ note.textContent=selected.answer;reveal.textContent=selected.answer;
+ putBack.hidden=true;next.hidden=false;status.textContent='The seal is open.';
+ examiner.querySelector('.view-hint').textContent='';
+}
+putBack.onclick=()=>{if(!selected)return;selected.x=rand(188,352);selected.y=rand(188,352);letters.push(selected);selected=null;draw.disabled=false;result.hidden=true;examiner.hidden=true;status.textContent='Back in the pile.';render();draw.focus()};
+next.onclick=()=>{
+ selected=null;
+ if(!letters.length)refill();
+ lift(letters.at(-1));
+};
+reset.onclick=()=>{refill();draw.focus()};
+canvas.addEventListener('keydown',event=>{if(event.key==='Enter'){event.preventDefault();draw.click()}if(event.key===' '){event.preventDefault();stir.click()}});
+function resize(){const scale=Math.min(devicePixelRatio||1,2);canvas.width=size*scale;canvas.height=size*scale;ctx.setTransform(scale,0,0,scale,0,0);render()}
+resize();refill();
+window.addEventListener('resize',resize);
+</script>
+</html>
