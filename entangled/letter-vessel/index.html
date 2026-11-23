@@ -22,7 +22,7 @@ canvas:active{cursor:grabbing}
 #status{color:#e1ca9f;min-height:48px}
 @media(max-width:650px){main{display:flex;flex-direction:column;padding:40px 4px 24px;gap:14px;min-height:auto;align-items:stretch}h1{font-size:clamp(38px,9vw,58px)}.vessel-stage{width:min(100%,580px);margin:auto}#status{min-height:0}}
 .vessel-stage{position:relative;min-width:0;width:min(100%,calc(100vh - 48px));justify-self:center}
-.examiner{position:absolute;inset:0;display:grid;place-items:center;perspective:780px;background:radial-gradient(ellipse,#08150de8 0%,#08150d65 55%,transparent 72%);touch-action:none;cursor:grab}
+.examiner{position:absolute;inset:0;display:grid;place-items:center;perspective:780px;background:radial-gradient(ellipse,#1d120be0 0%,#1d120b70 55%,transparent 75%);touch-action:none;cursor:grab}
 .examiner:active{cursor:grabbing}
 .envelope-model{width:63%;aspect-ratio:1.53;position:relative;transform-style:preserve-3d;transform:translateZ(45px) rotateX(var(--rx,8deg)) rotateY(var(--ry,-12deg));transition:transform .22s ease-out}
 .examiner[data-dragging=true] .envelope-model{transition:none}
@@ -51,12 +51,12 @@ canvas:active{cursor:grabbing}
 @media(prefers-reduced-motion:reduce){.open-flap,.letter-note{animation-delay:0s;animation-duration:1ms}}
 </style>
 <main>
-<header><small>The Ritual</small><h1>The Letter Vessel</h1><p>Stir the pile. Catch a letter and drag it out over the rim, or tap one to lift it.</p>
+<header><small>The Ritual</small><h1>The Letter Vessel</h1><p>Stir the pile. Tap a letter to lift it, or drag one away from the pile.</p>
 <div class="buttons"><button id="stir">Stir the letters</button><button id="draw">Draw a letter</button><button id="reset" hidden>Refill the vessel</button></div>
 <p id="status" role="status">48 sealed letters. Each holds a dinner idea.</p>
 <section id="result" hidden><h2 id="reveal">A sealed letter</h2><button id="return">Put it back</button> <button id="next" hidden>Draw again</button></section>
 </header>
-<div class="vessel-stage"><canvas id="vessel" aria-label="Letter vessel. Drag to stir or pull a letter over the rim. Press Enter to draw." tabindex="0"></canvas>
+<div class="vessel-stage"><canvas id="vessel" aria-label="Letter vessel. Drag to stir, or pull a letter away from the pile. Press Enter to draw." tabindex="0"></canvas>
 <div class="examiner" id="examiner" tabindex="0" aria-label="Open drawn envelope. Drag or use the arrow keys to turn it." hidden>
   <div class="envelope-model" id="envelope-model" aria-hidden="true">
     <div class="face face-front"><div class="open-pocket"></div><div class="open-flap"></div><div class="letter-note" id="letter-note"></div></div><div class="face face-back"><i>Private correspondence</i></div>
@@ -70,8 +70,7 @@ const canvas=document.querySelector('#vessel'),ctx=canvas.getContext('2d');
 const status=document.querySelector('#status'),result=document.querySelector('#result'),reveal=document.querySelector('#reveal');
 const next=document.querySelector('#next');
 const reset=document.querySelector('#reset'),draw=document.querySelector('#draw'),stir=document.querySelector('#stir'),putBack=document.querySelector('#return');
-const vesselPhoto=new Image(), envelopePhoto=new Image();
-vesselPhoto.onload=()=>render();
+const envelopePhoto=new Image();
 envelopePhoto.onload=()=>{
  for(let i=0;i<palette.length;i++){
   const texture=document.createElement('canvas');
@@ -83,7 +82,6 @@ envelopePhoto.onload=()=>{
  }
  render();
 };
-vesselPhoto.src='vessel-photo.webp';
 envelopePhoto.src='envelope-photo.webp';
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const size=540,center=270,radius=204;
@@ -137,8 +135,6 @@ function refill(){
  letters=Array.from({length:48},(_,i)=>{const angle=rand(0,Math.PI*2),distance=Math.sqrt(Math.random())*173;return {x:center+Math.cos(angle)*distance,y:center+Math.sin(angle)*distance,a:rand(-Math.PI,Math.PI),vx:0,vy:0,va:0,paper:palette[i%palette.length],answer:menu[i%menu.length]}});
  selected=null;gesture=null;result.hidden=true;examiner.hidden=true;reset.hidden=true;draw.disabled=false;status.textContent='48 sealed letters. Each holds a dinner idea.';render();
 }
-function ring(r,paint,width){ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.strokeStyle=paint;ctx.lineWidth=width;ctx.stroke()}
-function disc(r,paint){ctx.beginPath();ctx.arc(center,center,r,0,Math.PI*2);ctx.fillStyle=paint;ctx.fill()}
 function envelope(p,lifted=false){
  ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.a);
  if(lifted)ctx.scale(1.12,1.12);
@@ -157,18 +153,7 @@ function envelope(p,lifted=false){
 }
 function render(){
  ctx.clearRect(0,0,size,size);
- const brass=ctx.createLinearGradient(95,0,437,540);
- [[0,'#71522b'],[.23,'#edcf8a'],[.47,'#8e6536'],[.67,'#e3c17c'],[1,'#4f351f']].forEach(([a,c])=>brass.addColorStop(a,c));
- ctx.shadowColor='#030906';ctx.shadowBlur=27;ctx.shadowOffsetY=13;disc(239,'#33281d');ctx.shadowBlur=0;ctx.shadowOffsetY=0;
- ring(228,brass,24);ring(238,'#d8bb78',1);ring(219,'#442f1c',2);
- const depth=ctx.createRadialGradient(235,252,34,center,center,217);
- depth.addColorStop(0,'#6b4b30');depth.addColorStop(.68,'#3e2c22');depth.addColorStop(1,'#100f0e');disc(216,depth);
- if(vesselPhoto.naturalWidth)ctx.drawImage(vesselPhoto,27,27,486,486);
- ctx.save();ctx.beginPath();ctx.arc(center,center,204,0,Math.PI*2);ctx.clip();
- letters.forEach(p=>{if(p!==gesture?.letter)envelope(p)});ctx.restore();
- if(!vesselPhoto.naturalWidth){ring(214,'#ba985b',2);ring(217,'#342315',3);
- ctx.save();ctx.translate(center,center);ctx.strokeStyle='#4f351fb0';ctx.lineWidth=1;
- for(let i=0;i<60;i++){ctx.rotate(Math.PI/30);ctx.beginPath();ctx.moveTo(226,0);ctx.lineTo(233,3);ctx.stroke()}ctx.restore();}
+ letters.forEach(p=>{if(p!==gesture?.letter)envelope(p)});
  if(gesture?.letter)envelope(gesture.letter,true);
 }
 function movePile(){
@@ -202,8 +187,8 @@ canvas.addEventListener('pointermove',event=>{
  const startRadius=Math.hypot(g.start.x-center,g.start.y-center),nowRadius=Math.hypot(q.x-center,q.y-center);
  if(g.mode==='pending'&&total>8){
   // A quick outward sweep near the rim catches a letter. Curved or central motions stir.
-  if(!selected&&g.candidate&&startRadius>77&&nowRadius-startRadius>total*.62){g.mode='pull';g.letter=g.candidate;status.textContent='Keep pulling past the brass rim.'}
-  else {g.mode='stir';status.textContent='The letters are mixing. Tap one, or pull one out over the rim.'}
+  if(!selected&&g.candidate&&startRadius>77&&nowRadius-startRadius>total*.62){g.mode='pull';g.letter=g.candidate;status.textContent='Keep pulling the letter away from the pile.'}
+  else {g.mode='stir';status.textContent='The letters are mixing. Tap one, or pull one away from the pile.'}
  }
  if(g.mode==='stir')mix(q.x,q.y,dx,dy);
  if(g.mode==='pull'){g.letter.x=q.x;g.letter.y=q.y;render();if(nowRadius>radius+23)lift(g.letter)}
