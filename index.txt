@@ -1,7 +1,7 @@
 1:"$Sreact.fragment"
 2:I[4094,[],""]
 3:I[5028,[],""]
-4:I[2882,["701","static/chunks/04763798-e1574f8b978a4048.js","937","static/chunks/937-7102ad90338b5f08.js","984","static/chunks/984-07345e7c84e5ccf8.js","974","static/chunks/app/page-8dcdb81b119000d9.js"],"EntangledShelter"]
+4:I[2882,["701","static/chunks/04763798-e1574f8b978a4048.js","937","static/chunks/937-7102ad90338b5f08.js","984","static/chunks/984-07345e7c84e5ccf8.js","974","static/chunks/app/page-6a40c915982d7253.js"],"EntangledShelter"]
 5:I[23,[],"OutletBoundary"]
 6:"$Sreact.suspense"
 8:I[23,[],"ViewportBoundary"]
